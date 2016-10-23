@@ -21,10 +21,28 @@
 		android:text="@string/empty_forums"
 		android:visibility="gone"/>
 
-	<android.support.v7.widget.RecyclerView
-		android:id="@android:id/list"
-		style="@style/RecyclerViewVerticalList"
+	<RelativeLayout
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:recyclerviewfastscroller="http://schemas.android.com/apk/res-auto"
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:visibility="gone"/>
+		android:layout_height="match_parent">
+
+		<android.support.v7.widget.RecyclerView
+			android:id="@android:id/list"
+			style="@style/RecyclerViewVerticalList"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:visibility="gone"/>
+
+		<xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller
+			android:id="@+id/fast_scroller"
+			android:layout_width="24dp"
+			android:layout_height="match_parent"
+			android:layout_alignParentEnd="true"
+			android:layout_alignParentRight="true"
+			android:paddingEnd="@dimen/margin_small"
+			android:paddingRight="@dimen/margin_small"
+			recyclerviewfastscroller:rfs_barColor="@color/accent"
+			recyclerviewfastscroller:rfs_handleBackground="@drawable/fast_scroller_handle"/>
+	</RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>

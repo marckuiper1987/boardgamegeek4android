@@ -38,6 +38,7 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import hugo.weaving.DebugLog;
 import retrofit2.Call;
+import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 public class ForumsFragment extends Fragment implements LoaderManager.LoaderCallbacks<SafeResponse<ForumListResponse>> {
 	private static final int LOADER_ID = 0;
@@ -50,6 +51,7 @@ public class ForumsFragment extends Fragment implements LoaderManager.LoaderCall
 	@BindView(android.R.id.progress) ContentLoadingProgressBar progressView;
 	@BindView(android.R.id.empty) TextView emptyView;
 	@BindView(android.R.id.list) RecyclerView recyclerView;
+	@BindView(R.id.fast_scroller) VerticalRecyclerViewFastScroller fastScroller;
 
 	@Override
 	@DebugLog
@@ -124,6 +126,9 @@ public class ForumsFragment extends Fragment implements LoaderManager.LoaderCall
 
 	@DebugLog
 	private void setUpRecyclerView() {
+		fastScroller.setRecyclerView(recyclerView);
+		recyclerView.addOnScrollListener(fastScroller.getOnScrollListener());
+
 		final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 		layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 		recyclerView.setLayoutManager(layoutManager);
