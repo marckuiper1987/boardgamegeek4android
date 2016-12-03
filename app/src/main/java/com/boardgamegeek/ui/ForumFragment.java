@@ -34,6 +34,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import hugo.weaving.DebugLog;
+import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 public class ForumFragment extends Fragment implements LoaderManager.LoaderCallbacks<PaginatedData<Thread>> {
 	private static final int LOADER_ID = 0;
@@ -49,6 +50,7 @@ public class ForumFragment extends Fragment implements LoaderManager.LoaderCallb
 	@BindView(android.R.id.progress) ContentLoadingProgressBar progressView;
 	@BindView(android.R.id.empty) View emptyView;
 	@BindView(android.R.id.list) RecyclerView recyclerView;
+	@BindView(R.id.fast_scroller) VerticalRecyclerViewFastScroller fastScroller;
 
 	@Override
 	@DebugLog
@@ -85,6 +87,9 @@ public class ForumFragment extends Fragment implements LoaderManager.LoaderCallb
 	}
 
 	private void setUpRecyclerView() {
+		fastScroller.setRecyclerView(recyclerView);
+		recyclerView.addOnScrollListener(fastScroller.getOnScrollListener());
+
 		final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 		layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 		recyclerView.setLayoutManager(layoutManager);
@@ -93,9 +98,10 @@ public class ForumFragment extends Fragment implements LoaderManager.LoaderCallb
 		recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
 
 		recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+			@DebugLog
 			@Override
-			public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-				super.onScrollStateChanged(recyclerView, newState);
+			public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+				super.onScrolled(recyclerView, dx, dy);
 
 				final ForumLoader loader = getLoader();
 				if (loader != null && !loader.isLoading() && loader.hasMoreResults()) {

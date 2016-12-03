@@ -119,6 +119,7 @@ dependencies {
     compile 'com.jakewharton.timber:timber:4.5.1'
     compile 'com.github.chrisbanes.photoview:library:1.2.4'
     compile 'xyz.danoz:recyclerviewfastscroller:0.1.3'
+    compile 'com.github.emanuelet:RecyclerViewFastScroller:0.2.0'
     compile('com.crashlytics.sdk.android:crashlytics:2.6.6@aar') {
         transitive = true;
     }
