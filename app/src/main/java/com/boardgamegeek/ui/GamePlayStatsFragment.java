@@ -61,7 +61,6 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -392,7 +391,7 @@ public class GamePlayStatsFragment extends Fragment implements LoaderManager.Loa
 		if (personalRating > 0) {
 			addStatRow(advancedTable, new Builder().labelId(R.string.play_stat_fhm).value(stats.calculateFhm()).infoId(R.string.play_stat_fhm_info));
 			addStatRow(advancedTable, new Builder().labelId(R.string.play_stat_hhm).value(stats.calculateHhm()).infoId(R.string.play_stat_hhm_info));
-			addStatRow(advancedTable, new Builder().labelId(R.string.play_stat_ruhm).value(stats.calculateRuhm()).infoId(R.string.play_stat_ruhm_info));
+			addStatRow(advancedTable, new Builder().labelId(R.string.play_stat_ruhm).value(stats.calculateRandyCoxNotUnhappinessMetric()).infoId(R.string.play_stat_ruhm_info));
 		}
 		addStatRow(advancedTable, new Builder().labelId(R.string.play_stat_utilization).valueAsPercentage(stats.calculateUtilization()).infoId(R.string.play_stat_utilization_info));
 		int hIndexOffset = stats.getHIndexOffset();
@@ -578,7 +577,6 @@ public class GamePlayStatsFragment extends Fragment implements LoaderManager.Loa
 		private Map<Integer, Integer> playCountPerPlayerCount;
 		private int realMinutesPlayed;
 		private int estimatedMinutesPlayed;
-		private int numberOfWinnableGames;
 		private double scoreSum;
 		private int scoreCount;
 		private double highScore;
@@ -617,7 +615,6 @@ public class GamePlayStatsFragment extends Fragment implements LoaderManager.Loa
 			playerCountSumWithLength = 0;
 			playCountPerPlayerCount = new ArrayMap<>();
 			playCountByLocation = new HashMap<>();
-			numberOfWinnableGames = 0;
 
 			realMinutesPlayed = 0;
 			estimatedMinutesPlayed = 0;
@@ -638,86 +635,98 @@ public class GamePlayStatsFragment extends Fragment implements LoaderManager.Loa
 					continue;
 				}
 
-				if (firstPlayDate == null) {
-					firstPlayDate = play.date;
-				}
-				lastPlayDate = play.date;
-
-				if (playCount < 5 && (playCount + play.quantity) >= 5) {
-					nickelDate = play.date;
-				}
-				if (playCount < 10 && (playCount + play.quantity) >= 10) {
-					dimeDate = play.date;
-				}
-				if (playCount < 25 && (playCount + play.quantity) >= 25) {
-					quarterDate = play.date;
-				}
-				if (playCount < 50 && (playCount + play.quantity) >= 50) {
-					halfDollarDate = play.date;
-				}
-				if (playCount < 100 && (playCount + play.quantity) >= 100) {
-					dollarDate = play.date;
-				}
+				calculateDates(play);
 				playCount += play.quantity;
 				if (play.getYear().equals(currentYear)) {
 					playCountThisYear += play.quantity;
 				}
-
-				if (play.length == 0) {
-					estimatedMinutesPlayed += playingTime * play.quantity;
-				} else {
-					realMinutesPlayed += play.length;
-					playCountWithLength += play.quantity;
-					playerCountSumWithLength += play.playerCount * play.quantity;
-				}
-
-				if (play.playerCount > 0) {
-					int previousQuantity = 0;
-					if (playCountPerPlayerCount.containsKey(play.playerCount)) {
-						previousQuantity = playCountPerPlayerCount.get(play.playerCount);
-					}
-					playCountPerPlayerCount.put(play.playerCount, previousQuantity + play.quantity);
-				}
-
-				if (play.isWinnable()) {
-					numberOfWinnableGames += play.quantity;
-				}
-
-				if (!TextUtils.isEmpty(play.location)) {
-					int previousPlays = 0;
-					if (playCountByLocation.containsKey(play.location)) {
-						previousPlays = playCountByLocation.get(play.location);
-					}
-					playCountByLocation.put(play.location, previousPlays + play.quantity);
-				}
-
+				calculateByLength(play);
+				calculateByPlayerCount(play);
+				calculateByLocation(play);
 				for (PlayerModel player : play.getPlayers()) {
-					if (!TextUtils.isEmpty(player.getUniqueName())) {
-						PlayerStats playerStats = this.playerStats.get(player.getUniqueName());
-						if (playerStats == null) {
-							playerStats = new PlayerStats();
-						}
-						playerStats.add(play, player);
-						this.playerStats.put(player.getUniqueName(), playerStats);
-					}
+					calculatePlayer(play, player);
+				}
+			}
+		}
 
-					if (StringUtils.isNumeric(player.score)) {
-						double score = StringUtils.parseDouble(player.score);
+		private void calculateDates(PlayModel play) {
+			// assumes plays are ordered from earliest to latest
+			if (firstPlayDate == null) {
+				firstPlayDate = play.date;
+			}
+			lastPlayDate = play.date;
 
-						scoreCount += play.quantity;
-						scoreSum += score * play.quantity;
+			if (playCount < 5 && (playCount + play.quantity) >= 5) {
+				nickelDate = play.date;
+			}
+			if (playCount < 10 && (playCount + play.quantity) >= 10) {
+				dimeDate = play.date;
+			}
+			if (playCount < 25 && (playCount + play.quantity) >= 25) {
+				quarterDate = play.date;
+			}
+			if (playCount < 50 && (playCount + play.quantity) >= 50) {
+				halfDollarDate = play.date;
+			}
+			if (playCount < 100 && (playCount + play.quantity) >= 100) {
+				dollarDate = play.date;
+			}
+			monthsPlayed.add(play.getYearAndMonth());
+		}
 
-						if (player.win) {
-							winningScoreCount += play.quantity;
-							winningScoreSum += score * play.quantity;
-						}
+		private void calculateByLength(PlayModel play) {
+			if (play.length == 0) {
+				estimatedMinutesPlayed += playingTime * play.quantity;
+			} else {
+				realMinutesPlayed += play.length;
+				playCountWithLength += play.quantity;
+				playerCountSumWithLength += play.playerCount * play.quantity;
+			}
+		}
 
-						if (score > highScore) highScore = score;
-						if (score < lowScore) lowScore = score;
-					}
+		private void calculateByPlayerCount(PlayModel play) {
+			if (play.playerCount > 0) {
+				int previousQuantity = 0;
+				if (playCountPerPlayerCount.containsKey(play.playerCount)) {
+					previousQuantity = playCountPerPlayerCount.get(play.playerCount);
+				}
+				playCountPerPlayerCount.put(play.playerCount, previousQuantity + play.quantity);
+			}
+		}
+
+		private void calculateByLocation(PlayModel play) {
+			if (!TextUtils.isEmpty(play.location)) {
+				int previousPlays = 0;
+				if (playCountByLocation.containsKey(play.location)) {
+					previousPlays = playCountByLocation.get(play.location);
+				}
+				playCountByLocation.put(play.location, previousPlays + play.quantity);
+			}
+		}
+
+		private void calculatePlayer(PlayModel play, PlayerModel player) {
+			if (!TextUtils.isEmpty(player.getUniqueName())) {
+				PlayerStats playerStats = this.playerStats.get(player.getUniqueName());
+				if (playerStats == null) {
+					playerStats = new PlayerStats();
+				}
+				playerStats.add(play, player);
+				this.playerStats.put(player.getUniqueName(), playerStats);
+			}
+
+			if (StringUtils.isNumeric(player.score)) {
+				double score = StringUtils.parseDouble(player.score);
+
+				scoreCount += play.quantity;
+				scoreSum += score * play.quantity;
+
+				if (player.win) {
+					winningScoreCount += play.quantity;
+					winningScoreSum += score * play.quantity;
 				}
 
-				monthsPlayed.add(play.getYearAndMonth());
+				if (score > highScore) highScore = score;
+				if (score < lowScore) lowScore = score;
 			}
 		}
 
@@ -947,7 +956,7 @@ public class GamePlayStatsFragment extends Fragment implements LoaderManager.Loa
 			return (int) ((personalRating - 5) * getHoursPlayed());
 		}
 
-		public double calculateRuhm() {
+		public double calculateRandyCoxNotUnhappinessMetric() {
 			double raw = (((double) calculateFlash()) / calculateLag()) * getMonthsPlayed() * personalRating;
 			if (raw == 0) {
 				return 0;
@@ -1078,19 +1087,25 @@ public class GamePlayStatsFragment extends Fragment implements LoaderManager.Loa
 		}
 
 		public boolean isWinnable() {
-			if (noWinStats) {
-				return false;
-			}
-			if (players == null || players.isEmpty()) {
-				return false;
-			}
-			if (updateTimestamp > 0) {
-				return true;
-			}
-			if (playId > 0 && deleteTimestamp == 0) {
-				return true;
-			}
-			return false;
+			return !noWinStats &&
+				!missingPlayers() &&
+				(isPendingUpdate() || (isSynced() && !isPendingDelete()));
+		}
+
+		private boolean isSynced() {
+			return playId > 0;
+		}
+
+		private boolean isPendingUpdate() {
+			return updateTimestamp > 0;
+		}
+
+		private boolean isPendingDelete() {
+			return deleteTimestamp > 0;
+		}
+
+		private boolean missingPlayers() {
+			return players == null || players.isEmpty();
 		}
 	}
 
