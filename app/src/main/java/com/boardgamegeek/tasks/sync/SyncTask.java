@@ -39,7 +39,7 @@ public abstract class SyncTask<T, E extends CompletedEvent> extends AsyncTask<Vo
 		bggService = createService();
 		if (!isRequestParamsValid())
 			return context.getString(R.string.msg_update_invalid_request, context.getString(getTypeDescriptionResId()));
-		if (NetworkUtils.isOffline(context)) return context.getString(R.string.msg_offline);
+		if (NetworkUtils.INSTANCE.isOffline(context)) return context.getString(R.string.msg_offline);
 		try {
 			boolean hasMorePages;
 			page = 0;

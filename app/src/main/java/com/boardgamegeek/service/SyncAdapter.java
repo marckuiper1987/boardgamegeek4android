@@ -142,7 +142,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	 */
 	@DebugLog
 	private boolean shouldContinueSync() {
-		if (NetworkUtils.isOffline(context)) {
+		if (context == null) {
+			Timber.i("context is null");
+			return false;
+		}
+
+		if (NetworkUtils.INSTANCE.isOffline(context)) {
 			Timber.i("Skipping sync; offline");
 			return false;
 		}
@@ -152,7 +157,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 			return false;
 		}
 
-		if (PreferencesUtils.getSyncOnlyWifi(context) && !NetworkUtils.isOnWiFi(context)) {
+		if (PreferencesUtils.getSyncOnlyWifi(context) && !NetworkUtils.INSTANCE.isOnWiFi(context)) {
 			Timber.i("Skipping sync; not on wifi");
 			return false;
 		}
