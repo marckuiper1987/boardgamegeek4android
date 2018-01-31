@@ -104,7 +104,7 @@ public class ThreadRecyclerViewAdapter extends RecyclerView.Adapter<ThreadRecycl
 			if (TextUtils.isEmpty(article.getBody())) {
 				bodyView.setText("");
 			} else {
-				UIUtils.setTextMaybeHtml(bodyView, article.getBody().trim());
+				UIUtils.INSTANCE.setTextMaybeHtml(bodyView, article.getBody().trim());
 			}
 			viewButton.setOnClickListener(new OnClickListener() {
 				@Override

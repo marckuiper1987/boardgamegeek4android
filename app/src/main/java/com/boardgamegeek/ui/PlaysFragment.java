@@ -236,32 +236,32 @@ public class PlaysFragment extends StickyHeaderListFragment implements LoaderCal
 	public void onPrepareOptionsMenu(Menu menu) {
 		switch (filterType) {
 			case FILTER_TYPE_STATUS_DIRTY:
-				UIUtils.checkMenuItem(menu, R.id.menu_filter_in_progress);
+				UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_filter_in_progress);
 				break;
 			case FILTER_TYPE_STATUS_PENDING:
-				UIUtils.checkMenuItem(menu, R.id.menu_filter_pending);
+				UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_filter_pending);
 				break;
 			case FILTER_TYPE_STATUS_ALL:
 			default:
-				UIUtils.checkMenuItem(menu, R.id.menu_filter_all);
+				UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_filter_all);
 				break;
 		}
 		if (sorter != null) {
 			switch (sorter.getType()) {
 				case PlaysSorterFactory.TYPE_PLAY_DATE:
-					UIUtils.checkMenuItem(menu, R.id.menu_sort_date);
+					UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_sort_date);
 					break;
 				case PlaysSorterFactory.TYPE_PLAY_GAME:
-					UIUtils.checkMenuItem(menu, R.id.menu_sort_game);
+					UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_sort_game);
 					break;
 				case PlaysSorterFactory.TYPE_PLAY_LENGTH:
-					UIUtils.checkMenuItem(menu, R.id.menu_sort_length);
+					UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_sort_length);
 					break;
 				case PlaysSorterFactory.TYPE_PLAY_LOCATION:
-					UIUtils.checkMenuItem(menu, R.id.menu_sort_location);
+					UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_sort_location);
 					break;
 				default:
-					UIUtils.checkMenuItem(menu, R.id.menu_sort_date);
+					UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_sort_date);
 					break;
 			}
 		}

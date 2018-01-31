@@ -64,7 +64,7 @@ public class GeekListDescriptionFragment extends Fragment {
 		usernameView.setText(geekList.getUsername());
 		itemCountView.setText(String.valueOf(geekList.getNumberOfItems()));
 		thumbCountView.setText(String.valueOf(geekList.getNumberOfThumbs()));
-		UIUtils.setWebViewText(bodyView, xmlConverter.toHtml(geekList.getDescription()));
+		UIUtils.INSTANCE.setWebViewText(bodyView, xmlConverter.toHtml(geekList.getDescription()));
 		postedDateView.setTimestamp(geekList.getPostTicks());
 		editedDateView.setTimestamp(geekList.getEditTicks());
 

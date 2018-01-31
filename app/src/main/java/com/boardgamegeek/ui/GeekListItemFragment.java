@@ -112,7 +112,7 @@ public class GeekListItemFragment extends Fragment {
 		usernameView.setText(username);
 		thumbsView.setText(String.valueOf(numberOfThumbs));
 		String content = xmlConverter.toHtml(body);
-		UIUtils.setWebViewText(bodyView, content);
+		UIUtils.INSTANCE.setWebViewText(bodyView, content);
 		postedDateView.setTimestamp(postedDate);
 		if (editedDate == postedDate) {
 			editedDateView.setVisibility(View.GONE);

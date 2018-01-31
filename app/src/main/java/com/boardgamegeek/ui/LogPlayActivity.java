@@ -1470,7 +1470,7 @@ public class LogPlayActivity extends AppCompatActivity {
 			public void bind() {
 				if (play != null) {
 					lengthView.setTextKeepState((play.length == Play.LENGTH_DEFAULT) ? "" : String.valueOf(play.length));
-					UIUtils.startTimerWithSystemTime(timerView, play.startTime);
+					UIUtils.INSTANCE.startTimerWithSystemTime(timerView, play.startTime);
 					canEdit = true;
 					if (play.hasStarted()) {
 						lengthView.setVisibility(View.GONE);
@@ -1508,7 +1508,7 @@ public class LogPlayActivity extends AppCompatActivity {
 					bind();
 					cancelNotification();
 					if (play.length > 0) {
-						UIUtils.finishingEditing(lengthView);
+						UIUtils.INSTANCE.finishingEditing(lengthView);
 					}
 				} else {
 					if (play.length == 0) {

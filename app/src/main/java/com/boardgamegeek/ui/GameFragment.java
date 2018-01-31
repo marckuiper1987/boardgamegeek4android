@@ -511,7 +511,7 @@ public class GameFragment extends Fragment implements LoaderCallbacks<Cursor>, O
 
 			idView.setText(String.valueOf(game.getId()));
 			updatedView.setTimestamp(game.getUpdated());
-			UIUtils.setTextMaybeHtml(descriptionView, game.getDescription());
+			UIUtils.INSTANCE.setTextMaybeHtml(descriptionView, game.getDescription());
 			ScrimUtils.applyWhiteScrim(descriptionView);
 			numberOfPlayersView.setText(PresentationUtils.describePlayerRange(getContext(), game.getMinPlayers(), game.getMaxPlayers()));
 

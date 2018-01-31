@@ -107,7 +107,7 @@ public class BuddyActivity extends SimpleSinglePaneActivity {
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		UIUtils.showMenuItem(menu, R.id.add_username, TextUtils.isEmpty(username));
+		UIUtils.INSTANCE.showMenuItem(menu, R.id.add_username, TextUtils.isEmpty(username));
 		return super.onPrepareOptionsMenu(menu);
 	}
 

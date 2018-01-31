@@ -231,9 +231,9 @@ public class PlayFragment extends ListFragment implements LoaderCallbacks<Cursor
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		UIUtils.showMenuItem(menu, R.id.menu_send, play.dirtyTimestamp > 0);
-		UIUtils.showMenuItem(menu, R.id.menu_discard, play.playId > 0 && play.dirtyTimestamp > 0);
-		UIUtils.enableMenuItem(menu, R.id.menu_share, play.playId > 0);
+		UIUtils.INSTANCE.showMenuItem(menu, R.id.menu_send, play.dirtyTimestamp > 0);
+		UIUtils.INSTANCE.showMenuItem(menu, R.id.menu_discard, play.playId > 0 && play.dirtyTimestamp > 0);
+		UIUtils.INSTANCE.enableMenuItem(menu, R.id.menu_share, play.playId > 0);
 		super.onPrepareOptionsMenu(menu);
 	}
 
@@ -436,7 +436,7 @@ public class PlayFragment extends ListFragment implements LoaderCallbacks<Cursor
 			lengthContainer.setVisibility(View.VISIBLE);
 			lengthView.setVisibility(View.GONE);
 			timerContainer.setVisibility(View.VISIBLE);
-			UIUtils.startTimerWithSystemTime(timerView, play.startTime);
+			UIUtils.INSTANCE.startTimerWithSystemTime(timerView, play.startTime);
 		} else {
 			lengthContainer.setVisibility(View.GONE);
 		}

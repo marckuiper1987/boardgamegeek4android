@@ -54,14 +54,14 @@ public class PlayersActivity extends SimpleSinglePaneActivity {
 		if (fragment != null) {
 			switch (fragment.getSort()) {
 				case PlayersSorterFactory.TYPE_QUANTITY:
-					UIUtils.checkMenuItem(menu, R.id.menu_sort_quantity);
+					UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_sort_quantity);
 					break;
 				case PlayersSorterFactory.TYPE_WINS:
-					UIUtils.checkMenuItem(menu, R.id.menu_sort_wins);
+					UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_sort_wins);
 					break;
 				case PlayersSorterFactory.TYPE_NAME:
 				default:
-					UIUtils.checkMenuItem(menu, R.id.menu_sort_name);
+					UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_sort_name);
 					break;
 			}
 		}

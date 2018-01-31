@@ -151,7 +151,7 @@ public class ProducerFragment extends Fragment implements LoaderCallbacks<Cursor
 
 			idView.setText(String.format(getString(R.string.id_list_text), String.valueOf(id)));
 			nameView.setText(name);
-			UIUtils.setTextMaybeHtml(descriptionView, description);
+			UIUtils.INSTANCE.setTextMaybeHtml(descriptionView, description);
 			updatedView.setTimestamp(updated);
 
 			if (updated == 0 || DateTimeUtils.howManyDaysOld(updated) > AGE_IN_DAYS_TO_REFRESH) {

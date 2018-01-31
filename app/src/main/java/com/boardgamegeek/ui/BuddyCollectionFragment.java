@@ -124,7 +124,7 @@ public class BuddyCollectionFragment extends StickyHeaderListFragment implements
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		UIUtils.showMenuItem(menu, R.id.menu_collection_random_game, adapter != null && adapter.getCount() > 0);
+		UIUtils.INSTANCE.showMenuItem(menu, R.id.menu_collection_random_game, adapter != null && adapter.getCount() > 0);
 		// check the proper submenu item
 		if (subMenu != null) {
 			for (int i = 0; i < subMenu.size(); i++) {

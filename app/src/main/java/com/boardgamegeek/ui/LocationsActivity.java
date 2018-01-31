@@ -49,9 +49,9 @@ public class LocationsActivity extends SimpleSinglePaneActivity {
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		if (sortType == LocationsSorterFactory.TYPE_QUANTITY) {
-			UIUtils.checkMenuItem(menu, R.id.menu_sort_quantity);
+			UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_sort_quantity);
 		} else {
-			UIUtils.checkMenuItem(menu, R.id.menu_sort_name);
+			UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_sort_name);
 		}
 		ToolbarUtils.setActionBarText(menu, R.id.menu_list_count, locationCount <= 0 ? "" : String.format("%,d", locationCount));
 		return super.onPrepareOptionsMenu(menu);
