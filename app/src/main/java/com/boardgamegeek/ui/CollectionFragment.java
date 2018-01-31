@@ -334,7 +334,7 @@ public class CollectionFragment extends StickyHeaderListFragment implements Load
 					return true;
 				case R.id.menu_create_shortcut:
 					if (viewId > 0) {
-						ShortcutUtils.createCollectionShortcut(getContext(), viewId, viewName);
+						ShortcutUtils.INSTANCE.createCollectionShortcut(getContext(), viewId, viewName);
 						return true;
 					}
 					break;

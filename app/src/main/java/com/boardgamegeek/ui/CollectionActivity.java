@@ -164,8 +164,8 @@ public class CollectionActivity extends TopLevelSinglePaneActivity implements Lo
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 				intent = createShortcutForOreo(event, shortcutIntent);
 			} else {
-				intent = ShortcutUtils.createShortcutIntent(this, event.getName(), shortcutIntent);
-				File file = ShortcutUtils.getThumbnailFile(this, event.getThumbnailUrl());
+				intent = ShortcutUtils.INSTANCE.createShortcutIntent(this, event.getName(), shortcutIntent);
+				File file = ShortcutUtils.INSTANCE.getThumbnailFile(this, event.getThumbnailUrl());
 				if (file != null && file.exists()) {
 					intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, BitmapFactory.decodeFile(file.getAbsolutePath()));
 				}
@@ -180,11 +180,11 @@ public class CollectionActivity extends TopLevelSinglePaneActivity implements Lo
 	private Intent createShortcutForOreo(@NonNull GameShortcutRequestedEvent event, @NonNull Intent shortcutIntent) {
 		ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
 		if (shortcutManager == null) return null;
-		ShortcutInfo.Builder builder = new ShortcutInfo.Builder(this, ShortcutUtils.createGameShortcutId(event.getId()))
-			.setShortLabel(StringUtils.limitText(event.getName(), ShortcutUtils.SHORT_LABEL_LENGTH))
-			.setLongLabel(StringUtils.limitText(event.getName(), ShortcutUtils.LONG_LABEL_LENGTH))
+		ShortcutInfo.Builder builder = new ShortcutInfo.Builder(this, ShortcutUtils.INSTANCE.createGameShortcutId(event.getId()))
+			.setShortLabel(StringUtils.limitText(event.getName(), ShortcutUtils.INSTANCE.getSHORT_LABEL_LENGTH()))
+			.setLongLabel(StringUtils.limitText(event.getName(), ShortcutUtils.INSTANCE.getLONG_LABEL_LENGTH()))
 			.setIntent(shortcutIntent);
-		File file = ShortcutUtils.getThumbnailFile(this, event.getThumbnailUrl());
+		File file = ShortcutUtils.INSTANCE.getThumbnailFile(this, event.getThumbnailUrl());
 		if (file != null && file.exists()) {
 			builder.setIcon(Icon.createWithAdaptiveBitmap(BitmapFactory.decodeFile(file.getAbsolutePath())));
 		} else {

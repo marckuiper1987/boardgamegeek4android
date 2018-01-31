@@ -205,7 +205,7 @@ public class GameActivity extends HeroTabActivity implements Callback {
 				TaskUtils.executeAsyncTask(new FavoriteGameTask(this, gameId, !isFavorite));
 				return true;
 			case R.id.menu_shortcut:
-				ShortcutUtils.createGameShortcut(this, gameId, gameName, thumbnailUrl);
+				ShortcutUtils.INSTANCE.createGameShortcut(this, gameId, gameName, thumbnailUrl);
 				return true;
 			case R.id.menu_log_play_quick:
 				Snackbar.make(coordinator, R.string.msg_logging_play, Snackbar.LENGTH_SHORT).show();

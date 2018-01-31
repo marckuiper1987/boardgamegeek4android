@@ -28,6 +28,6 @@ public class GameShortcutTask extends ShortcutTask {
 
 	@Override
 	protected String getId() {
-		return ShortcutUtils.createGameShortcutId(gameId);
+		return ShortcutUtils.INSTANCE.createGameShortcutId(gameId);
 	}
 }

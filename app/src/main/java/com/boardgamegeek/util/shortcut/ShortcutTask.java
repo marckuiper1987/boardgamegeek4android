@@ -59,7 +59,7 @@ public abstract class ShortcutTask extends AsyncTask<Void, Void, Void> {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			createShortcutForOreo();
 		} else {
-			Intent shortcutIntent = ShortcutUtils.createShortcutIntent(context, getShortcutName(), createIntent(), getShortcutIconResId());
+			Intent shortcutIntent = ShortcutUtils.INSTANCE.createShortcutIntent(context, getShortcutName(), createIntent(), getShortcutIconResId());
 			if (!TextUtils.isEmpty(thumbnailUrl)) {
 				Bitmap bitmap = fetchThumbnail();
 				if (bitmap != null) {
@@ -77,8 +77,8 @@ public abstract class ShortcutTask extends AsyncTask<Void, Void, Void> {
 		ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
 		if (shortcutManager != null && shortcutManager.isRequestPinShortcutSupported()) {
 			ShortcutInfo.Builder builder = new ShortcutInfo.Builder(context, getId())
-				.setShortLabel(StringUtils.limitText(getShortcutName(), ShortcutUtils.SHORT_LABEL_LENGTH))
-				.setLongLabel(StringUtils.limitText(getShortcutName(), ShortcutUtils.LONG_LABEL_LENGTH))
+				.setShortLabel(StringUtils.limitText(getShortcutName(), ShortcutUtils.INSTANCE.getSHORT_LABEL_LENGTH()))
+				.setLongLabel(StringUtils.limitText(getShortcutName(), ShortcutUtils.INSTANCE.getLONG_LABEL_LENGTH()))
 				.setIntent(createIntent());
 			if (!TextUtils.isEmpty(thumbnailUrl)) {
 				Bitmap bitmap = fetchThumbnail();
@@ -101,7 +101,7 @@ public abstract class ShortcutTask extends AsyncTask<Void, Void, Void> {
 	@Nullable
 	private Bitmap fetchThumbnail() {
 		Bitmap bitmap = null;
-		File file = ShortcutUtils.getThumbnailFile(context, thumbnailUrl);
+		File file = ShortcutUtils.INSTANCE.getThumbnailFile(context, thumbnailUrl);
 		if (file != null && file.exists()) {
 			bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
 		} else {
