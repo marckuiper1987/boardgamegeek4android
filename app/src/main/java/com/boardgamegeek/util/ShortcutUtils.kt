@@ -19,32 +19,32 @@ object ShortcutUtils {
     val SHORT_LABEL_LENGTH = 14
     val LONG_LABEL_LENGTH = 25
 
-    fun createCollectionShortcut(context: Context, viewId: Long, viewName: String) {
-        val task = CollectionShortcutTask(context, viewId, viewName)
+    fun Context.createCollectionShortcut(viewId: Long, viewName: String) {
+        val task = CollectionShortcutTask(this, viewId, viewName)
         TaskUtils.executeAsyncTask(task)
     }
 
-    fun createGameShortcut(context: Context, gameId: Int, gameName: String, thumbnailUrl: String) {
-        val task = GameShortcutTask(context, gameId, gameName, thumbnailUrl)
+    fun Context.createGameShortcut(gameId: Int, gameName: String, thumbnailUrl: String) {
+        val task = GameShortcutTask(this, gameId, gameName, thumbnailUrl)
         TaskUtils.executeAsyncTask(task)
     }
 
-    fun getThumbnailFile(context: Context, url: String): File? {
+    fun Context.getThumbnailFile(url: String?): File? {
         if (!TextUtils.isEmpty(url)) {
             val filename = FileUtils.getFileNameFromUrl(url)
             if (filename != null) {
-                return File(FileUtils.generateContentPath(context, BggContract.PATH_THUMBNAILS), filename)
+                return File(FileUtils.generateContentPath(this, BggContract.PATH_THUMBNAILS), filename)
             }
         }
         return null
     }
 
     @JvmOverloads
-    fun createShortcutIntent(context: Context, shortcutName: String, intent: Intent, @DrawableRes shortcutIconResId: Int = R.mipmap.ic_launcher_foreground): Intent {
+    fun Context.createShortcutIntent(shortcutName: String, intent: Intent, @DrawableRes shortcutIconResId: Int = R.mipmap.ic_launcher_foreground): Intent {
         val shortcut = Intent("com.android.launcher.action.INSTALL_SHORTCUT")
         shortcut.putExtra(Intent.EXTRA_SHORTCUT_INTENT, intent)
         shortcut.putExtra(Intent.EXTRA_SHORTCUT_NAME, shortcutName)
-        shortcut.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(context, shortcutIconResId))
+        shortcut.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(this, shortcutIconResId))
         return shortcut
     }
 

@@ -16,6 +16,8 @@ import android.text.TextUtils
 import com.boardgamegeek.R
 import com.boardgamegeek.util.HttpUtils
 import com.boardgamegeek.util.ShortcutUtils
+import com.boardgamegeek.util.ShortcutUtils.createShortcutIntent
+import com.boardgamegeek.util.ShortcutUtils.getThumbnailFile
 import com.boardgamegeek.util.StringUtils
 import com.squareup.picasso.Picasso
 import timber.log.Timber
@@ -40,7 +42,7 @@ abstract class ShortcutTask @JvmOverloads constructor(context: Context?, thumbna
             createShortcutForOreo()
         } else {
             val intent = createIntent() ?: return null
-            val shortcutIntent = ShortcutUtils.createShortcutIntent(context, shortcutName, intent, shortcutIconResId)
+            val shortcutIntent = context.createShortcutIntent(shortcutName, intent, shortcutIconResId)
             if (!TextUtils.isEmpty(thumbnailUrl)) {
                 val bitmap = fetchThumbnail()
                 if (bitmap != null) {
@@ -76,8 +78,9 @@ abstract class ShortcutTask @JvmOverloads constructor(context: Context?, thumbna
     }
 
     private fun fetchThumbnail(): Bitmap? {
+        if (context == null) return null
         var bitmap: Bitmap? = null
-        val file = ShortcutUtils.getThumbnailFile(context!!, thumbnailUrl!!)
+        val file = context.getThumbnailFile(thumbnailUrl)
         if (file != null && file.exists()) {
             bitmap = BitmapFactory.decodeFile(file.absolutePath)
         } else {
