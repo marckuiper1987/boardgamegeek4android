@@ -53,7 +53,7 @@ public class LocationsActivity extends SimpleSinglePaneActivity {
 		} else {
 			UIUtils.INSTANCE.checkMenuItem(menu, R.id.menu_sort_name);
 		}
-		ToolbarUtils.setActionBarText(menu, R.id.menu_list_count, locationCount <= 0 ? "" : String.format("%,d", locationCount));
+		ToolbarUtils.INSTANCE.setActionBarText(menu, R.id.menu_list_count, locationCount <= 0 ? "" : String.format("%,d", locationCount));
 		return super.onPrepareOptionsMenu(menu);
 	}
 

@@ -62,7 +62,7 @@ public class PlayerPlaysActivity extends SimpleSinglePaneActivity {
 	@DebugLog
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		ToolbarUtils.setActionBarText(menu, R.id.menu_list_count, playCount < 0 ? "" : String.valueOf(playCount));
+		ToolbarUtils.INSTANCE.setActionBarText(menu, R.id.menu_list_count, playCount < 0 ? "" : String.valueOf(playCount));
 		return super.onPrepareOptionsMenu(menu);
 	}
 

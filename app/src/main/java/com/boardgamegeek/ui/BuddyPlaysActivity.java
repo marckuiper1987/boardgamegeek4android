@@ -68,7 +68,7 @@ public class BuddyPlaysActivity extends SimpleSinglePaneActivity {
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		String countDescription = numberOfPlays <= 0 ? "" : String.valueOf(numberOfPlays);
-		ToolbarUtils.setActionBarText(menu, R.id.menu_text, countDescription);
+		ToolbarUtils.INSTANCE.setActionBarText(menu, R.id.menu_text, countDescription);
 		return super.onPrepareOptionsMenu(menu);
 	}
 

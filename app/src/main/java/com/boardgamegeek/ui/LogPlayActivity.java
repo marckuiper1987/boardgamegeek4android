@@ -356,7 +356,7 @@ public class LogPlayActivity extends AppCompatActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_logplay);
-		ToolbarUtils.setDoneCancelActionBarView(this, actionBarListener);
+		ToolbarUtils.INSTANCE.setDoneCancelActionBarView(this, actionBarListener);
 
 		ButterKnife.bind(this);
 

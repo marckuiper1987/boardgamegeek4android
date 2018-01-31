@@ -183,7 +183,7 @@ public class LogPlayerActivity extends AppCompatActivity {
 
 		nameView.setOnItemClickListener(nameClickListener());
 
-		ToolbarUtils.setDoneCancelActionBarView(this, actionBarListener);
+		ToolbarUtils.INSTANCE.setDoneCancelActionBarView(this, actionBarListener);
 
 		final Intent intent = getIntent();
 		int gameId = intent.getIntExtra(KEY_GAME_ID, BggContract.INVALID_ID);

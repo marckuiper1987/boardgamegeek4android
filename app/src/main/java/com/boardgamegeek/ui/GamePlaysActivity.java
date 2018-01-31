@@ -103,7 +103,7 @@ public class GamePlaysActivity extends SimpleSinglePaneActivity {
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		String countDescription = playCount <= 0 ? "" : String.valueOf(playCount);
-		ToolbarUtils.setActionBarText(menu, R.id.menu_text, countDescription);
+		ToolbarUtils.INSTANCE.setActionBarText(menu, R.id.menu_text, countDescription);
 		return super.onPrepareOptionsMenu(menu);
 	}
 
