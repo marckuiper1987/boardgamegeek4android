@@ -69,7 +69,7 @@ public class ArticleFragment extends Fragment {
 		} else {
 			editDateView.setVisibility(View.GONE);
 		}
-		//bodyView.setWebViewText(body);
+		UIUtils.INSTANCE.setWebViewText(bodyView, body);
 
 		return rootView;
 	}
