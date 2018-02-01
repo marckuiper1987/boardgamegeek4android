@@ -19,7 +19,5 @@ object NetworkUtils {
         return activeNetwork != null && activeNetwork.type == ConnectivityManager.TYPE_WIFI
     }
 
-    private fun Context.getActiveNetworkInfo(): NetworkInfo? {
-        (getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetworkInfo
-    }
+    private fun Context.getActiveNetworkInfo(): NetworkInfo? = (getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetworkInfo
 }
