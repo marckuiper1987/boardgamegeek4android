@@ -12,23 +12,22 @@ import com.boardgamegeek.R
  */
 object ToolbarUtils {
     fun Menu.setActionBarText(id: Int, text: String) {
-        setActionBarText(id, text, null)
+        setActionBarText(id, text, "")
     }
 
-    fun Menu.setActionBarText(id: Int, text1: String, text2: String?) {
-        val item = findItem(id) ?: return
-        val actionView = item.actionView
-        if (actionView != null) {
-            actionView.findViewById<TextView>(android.R.id.text1).text = text1
-            actionView.findViewById<TextView>(android.R.id.text2).text = text2
+    fun Menu.setActionBarText(id: Int, text1: String, text2: String) {
+        with(findItem(id)?.actionView ?: return) {
+            findViewById<TextView>(android.R.id.text1)?.text = text1
+            findViewById<TextView>(android.R.id.text2)?.text = text2
         }
     }
 
     fun AppCompatActivity.setDoneCancelActionBarView(listener: View.OnClickListener) {
-        val toolbar = findViewById<Toolbar>(R.id.toolbar_done_cancel) ?: return
-        toolbar.setContentInsetsAbsolute(0, 0)
-        toolbar.findViewById<View>(R.id.menu_cancel).setOnClickListener(listener)
-        toolbar.findViewById<View>(R.id.menu_done).setOnClickListener(listener)
-        setSupportActionBar(toolbar)
+        with(findViewById<Toolbar>(R.id.toolbar_done_cancel) ?: return) {
+            setContentInsetsAbsolute(0, 0)
+            findViewById<View>(R.id.menu_cancel)?.setOnClickListener(listener)
+            findViewById<View>(R.id.menu_done)?.setOnClickListener(listener)
+            setSupportActionBar(this)
+        }
     }
 }

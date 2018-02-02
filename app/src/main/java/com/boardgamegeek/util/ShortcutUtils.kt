@@ -29,7 +29,7 @@ object ShortcutUtils {
         TaskUtils.executeAsyncTask(task)
     }
 
-    fun Context.getThumbnailFile(url: String?): File? {
+    fun Context.getThumbnailFile(url: String): File? {
         if (!TextUtils.isEmpty(url)) {
             val filename = FileUtils.getFileNameFromUrl(url)
             if (filename != null) {
@@ -41,11 +41,13 @@ object ShortcutUtils {
 
     @JvmOverloads
     fun Context.createShortcutIntent(shortcutName: String, intent: Intent, @DrawableRes shortcutIconResId: Int = R.mipmap.ic_launcher_foreground): Intent {
-        val shortcut = Intent("com.android.launcher.action.INSTALL_SHORTCUT")
-        shortcut.putExtra(Intent.EXTRA_SHORTCUT_INTENT, intent)
-        shortcut.putExtra(Intent.EXTRA_SHORTCUT_NAME, shortcutName)
-        shortcut.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(this, shortcutIconResId))
-        return shortcut
+        val iconResource = Intent.ShortcutIconResource.fromContext(this, shortcutIconResId)
+        with(Intent("com.android.launcher.action.INSTALL_SHORTCUT")) {
+            putExtra(Intent.EXTRA_SHORTCUT_INTENT, intent)
+            putExtra(Intent.EXTRA_SHORTCUT_NAME, shortcutName)
+            putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconResource)
+            return this
+        }
     }
 
     fun createGameShortcutId(gameId: Int): String {

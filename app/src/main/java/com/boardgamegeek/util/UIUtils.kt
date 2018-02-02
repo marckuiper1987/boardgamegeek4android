@@ -67,19 +67,19 @@ object UIUtils {
     fun EditText.finishingEditing() {
         setSelection(0, text.length)
         requestFocus()
-        val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
+        val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        inputMethodManager?.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
     }
 
     fun Menu.showMenuItem(itemId: Int, visible: Boolean) {
-        findItem(itemId).isVisible = visible
+        findItem(itemId)?.isVisible = visible
     }
 
     fun Menu.enableMenuItem(itemId: Int, enabled: Boolean) {
-        findItem(itemId).isEnabled = enabled
+        findItem(itemId)?.isEnabled = enabled
     }
 
     fun Menu.checkMenuItem(itemId: Int) {
-        findItem(itemId).isChecked = true
+        findItem(itemId)?.isChecked = true
     }
 }

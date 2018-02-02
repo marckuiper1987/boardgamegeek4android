@@ -83,12 +83,8 @@ public class HttpUtils {
 	 * Ensures the URL has a scheme, setting it to HTTPS if missing.
 	 */
 	public static String ensureScheme(String url) {
-		if (TextUtils.isEmpty(url)) {
-			return url;
-		}
-		if (url.startsWith("//")) {
-			return "https:" + url;
-		}
+		if (TextUtils.isEmpty(url)) return "";
+		if (url.startsWith("//")) return "https:" + url;
 		return url;
 	}
 }

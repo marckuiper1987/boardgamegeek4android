@@ -27,7 +27,7 @@ import java.io.IOException
 
 abstract class ShortcutTask @JvmOverloads constructor(context: Context?, thumbnailUrl: String? = null) : AsyncTask<Void, Void, Void>() {
     @SuppressLint("StaticFieldLeak") protected val context: Context? = context?.applicationContext
-    private val thumbnailUrl: String? = HttpUtils.ensureScheme(thumbnailUrl)
+    private val thumbnailUrl: String = HttpUtils.ensureScheme(thumbnailUrl)
 
     protected abstract val shortcutName: String
     protected abstract val id: String
