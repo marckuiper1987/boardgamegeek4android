@@ -37,7 +37,7 @@ abstract class JsonImportTask<T : Model>(context: Context?, private val type: St
 
     protected abstract fun importRecord(item: T, version: Int)
 
-    override fun doInBackground(vararg params: Void): String? {
+    override fun doInBackground(vararg params: Void): String {
         if (context == null) return "Error."
 
         val fileInputStream: FileInputStream
@@ -126,7 +126,7 @@ abstract class JsonImportTask<T : Model>(context: Context?, private val type: St
 
         FileUtils.closePfd(pfd)
 
-        return null
+        return ""
     }
 
     @Throws(IOException::class)

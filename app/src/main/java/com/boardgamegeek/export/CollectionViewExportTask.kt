@@ -24,8 +24,8 @@ class CollectionViewExportTask(context: Context, uri: Uri) : JsonExportTask<Coll
     }
 
     override fun writeJsonRecord(context: Context, cursor: Cursor, gson: Gson, writer: JsonWriter) {
-        val cv = CollectionView.fromCursor(cursor)
-        cv.addFilters(context)
-        gson.toJson(cv, CollectionView::class.java, writer)
+        val collectionView = CollectionView.fromCursor(cursor)
+        collectionView.addFilters(context)
+        gson.toJson(collectionView, CollectionView::class.java, writer)
     }
 }

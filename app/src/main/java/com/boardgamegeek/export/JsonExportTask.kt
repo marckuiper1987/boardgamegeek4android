@@ -33,7 +33,7 @@ abstract class JsonExportTask<T : Model>(context: Context?, private val type: St
 
     protected abstract fun writeJsonRecord(context: Context, cursor: Cursor, gson: Gson, writer: JsonWriter)
 
-    override fun doInBackground(vararg params: Void): String? {
+    override fun doInBackground(vararg params: Void): String {
         if (context == null) return "Error."
 
         if (uri == null) {
@@ -102,9 +102,8 @@ abstract class JsonExportTask<T : Model>(context: Context?, private val type: St
 
         FileUtils.closePfd(pfd)
 
-        return null
+        return ""
     }
-
 
     override fun onProgressUpdate(vararg values: Int?) {
         EventBus.getDefault().post(ExportProgressEvent(

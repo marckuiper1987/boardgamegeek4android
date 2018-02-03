@@ -41,7 +41,7 @@ class CollectionViewImportTask(context: Context, uri: Uri) : JsonImportTask<Coll
         values.put(CollectionViews.SORT_TYPE, item.sortType)
         val uri = context.contentResolver.insert(CollectionViews.CONTENT_URI, values)
 
-        if (item.filters == null || item.filters.size == 0) return
+        if (item.filters.isEmpty()) return
 
         val viewId = CollectionViews.getViewId(uri)
         val filterUri = CollectionViews.buildViewFilterUri(viewId.toLong())

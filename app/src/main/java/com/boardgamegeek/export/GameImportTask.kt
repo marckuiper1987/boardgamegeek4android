@@ -18,19 +18,19 @@ class GameImportTask(context: Context, uri: Uri) : JsonImportTask<Game>(context,
         return gson.fromJson(reader, Game::class.java)
     }
 
-    override fun importRecord(game: Game, version: Int) {
+    override fun importRecord(item: Game, version: Int) {
         if (context == null) {
             Timber.w("Null context")
             return
         }
 
-        if (ResolverUtils.rowExists(context.contentResolver, Games.buildGameUri(game.gameId))) {
-            val gameColorsUri = Games.buildColorsUri(game.gameId)
+        if (ResolverUtils.rowExists(context.contentResolver, Games.buildGameUri(item.gameId))) {
+            val gameColorsUri = Games.buildColorsUri(item.gameId)
 
             context.contentResolver.delete(gameColorsUri, null, null)
 
             val values = mutableListOf<ContentValues>()
-            game.colors.forEach { color ->
+            item.colors.forEach { color ->
                 if (!TextUtils.isEmpty(color.color)) {
                     val cv = ContentValues()
                     cv.put(GameColors.COLOR, color.color)

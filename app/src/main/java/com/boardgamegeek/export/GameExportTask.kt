@@ -26,7 +26,7 @@ class GameExportTask(context: Context, uri: Uri) : JsonExportTask<Game>(context,
     override fun writeJsonRecord(context: Context, cursor: Cursor, gson: Gson, writer: JsonWriter) {
         with(Game.fromCursor(cursor)) {
             addColors(context)
-            if (hasColors()) {
+            if (colors.isNotEmpty()) {
                 gson.toJson(this, Game::class.java, writer)
             }
         }

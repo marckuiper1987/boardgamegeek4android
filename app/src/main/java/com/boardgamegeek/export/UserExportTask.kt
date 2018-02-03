@@ -25,7 +25,7 @@ class UserExportTask(context: Context, uri: Uri) : JsonExportTask<User>(context,
     override fun writeJsonRecord(context: Context, cursor: Cursor, gson: Gson, writer: JsonWriter) {
         with(User.fromCursor(cursor)) {
             addColors(context)
-            if (hasColors()) {
+            if (colors.isNotEmpty()) {
                 gson.toJson(this, User::class.java, writer)
             }
         }

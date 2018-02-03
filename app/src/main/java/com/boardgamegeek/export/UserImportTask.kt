@@ -20,20 +20,20 @@ class UserImportTask(context: Context, uri: Uri) : JsonImportTask<User>(context,
         return gson.fromJson(reader, User::class.java)
     }
 
-    override fun importRecord(user: User, version: Int) {
+    override fun importRecord(item: User, version: Int) {
         if (context == null) {
             Timber.w("Null context")
             return
         }
 
-        if (ResolverUtils.rowExists(context.contentResolver, Buddies.buildBuddyUri(user.name))) {
-            val batch = ArrayList<ContentProviderOperation>(user.colors.size)
-            user.colors.forEach { color ->
+        if (ResolverUtils.rowExists(context.contentResolver, Buddies.buildBuddyUri(item.name))) {
+            val batch = ArrayList<ContentProviderOperation>(item.colors.size)
+            item.colors.forEach { color ->
                 if (!TextUtils.isEmpty(color.color)) {
-                    val builder: Builder = if (ResolverUtils.rowExists(context.contentResolver, PlayerColors.buildUserUri(user.name, color.sort))) {
-                        ContentProviderOperation.newUpdate(PlayerColors.buildUserUri(user.name, color.sort))
+                    val builder: Builder = if (ResolverUtils.rowExists(context.contentResolver, PlayerColors.buildUserUri(item.name, color.sort))) {
+                        ContentProviderOperation.newUpdate(PlayerColors.buildUserUri(item.name, color.sort))
                     } else {
-                        ContentProviderOperation.newInsert(PlayerColors.buildUserUri(user.name))
+                        ContentProviderOperation.newInsert(PlayerColors.buildUserUri(item.name))
                                 .withValue(PlayerColors.PLAYER_COLOR_SORT_ORDER, color.sort)
                     }
                     batch.add(builder.withValue(PlayerColors.PLAYER_COLOR, color.color).build())
