@@ -19,7 +19,7 @@ class DataStepRow(context: Context?) : LinearLayout(context) {
     private var listener: Listener? = null
 
     interface Listener {
-        fun onExportClicked(tag: String)
+        fun onExportClicked(type: String)
 
         fun onImportClicked(type: String)
     }
