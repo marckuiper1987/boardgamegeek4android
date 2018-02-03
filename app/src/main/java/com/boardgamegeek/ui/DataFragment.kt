@@ -41,13 +41,14 @@ class DataFragment : Fragment(), Listener {
 
     @DebugLog
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_data, container, false)
+        return inflater.inflate(R.layout.fragment_data, container, false)
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         createDataRow(TYPE_COLLECTION_VIEWS, R.string.backup_type_collection_view, R.string.backup_description_collection_view)
         createDataRow(TYPE_GAMES, R.string.backup_type_game, R.string.backup_description_game)
         createDataRow(TYPE_USERS, R.string.backup_type_user, R.string.backup_description_user)
-
-        return root
     }
 
     private fun createDataRow(type: String, @StringRes typeResId: Int, @StringRes descriptionResId: Int) {
