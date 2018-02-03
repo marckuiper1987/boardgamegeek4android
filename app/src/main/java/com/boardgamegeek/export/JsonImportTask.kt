@@ -21,7 +21,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.util.*
 
-abstract class JsonImportTask<T : Model>(context: Context?, private val type: String, private val uri: Uri?) : AsyncTask<Void, Int, String>() {
+abstract class JsonImportTask<T : Model>(context: Context?, private val type: String, private val uri: Uri) : AsyncTask<Void, Int, String>() {
     @SuppressLint("StaticFieldLeak") protected val context: Context? = context?.applicationContext
     private val items: MutableList<T>
     private val PROGRESS_TOTAL = 0
@@ -42,7 +42,7 @@ abstract class JsonImportTask<T : Model>(context: Context?, private val type: St
 
         val fileInputStream: FileInputStream
         var pfd: ParcelFileDescriptor? = null
-        if (uri == null) {
+        if (uri == Uri.EMPTY) {
             if (!FileUtils.isExtStorageAvailable()) return context.getString(R.string.msg_export_failed_external_unavailable)
 
             // TODO: Ensure no large database ops are running?

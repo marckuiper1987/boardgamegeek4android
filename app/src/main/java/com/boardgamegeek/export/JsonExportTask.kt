@@ -21,7 +21,7 @@ import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.*
 
-abstract class JsonExportTask<T : Model>(context: Context?, private val type: String, private val uri: Uri?) : AsyncTask<Void, Int, String>() {
+abstract class JsonExportTask<T : Model>(context: Context?, private val type: String, private val uri: Uri) : AsyncTask<Void, Int, String>() {
     @SuppressLint("StaticFieldLeak") private val context = context?.applicationContext
     private val PROGRESS_TOTAL = 0
     private val PROGRESS_CURRENT = 1
@@ -36,7 +36,7 @@ abstract class JsonExportTask<T : Model>(context: Context?, private val type: St
     override fun doInBackground(vararg params: Void): String {
         if (context == null) return "Error."
 
-        if (uri == null) {
+        if (uri == Uri.EMPTY) {
             val permissionCheck = ContextCompat.checkSelfPermission(context, permission.WRITE_EXTERNAL_STORAGE)
             if (permissionCheck == PackageManager.PERMISSION_DENIED) {
                 return context.getString(R.string.msg_export_failed_external_permissions)
@@ -58,7 +58,7 @@ abstract class JsonExportTask<T : Model>(context: Context?, private val type: St
 
         val out: OutputStream
         var pfd: ParcelFileDescriptor? = null
-        if (uri == null) {
+        if (uri == Uri.EMPTY) {
             val file = FileUtils.getExportFile(type)
             try {
                 out = FileOutputStream(file)

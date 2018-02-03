@@ -16,14 +16,13 @@
 		tools:context=".ui.DataActivity">
 
 		<TextView
-			android:id="@+id/export_message"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:paddingBottom="@dimen/padding_extra"
 			android:text="@string/description_backup"/>
 
 		<LinearLayout
-			android:id="@+id/backup_types"
+			android:id="@+id/fileTypesView"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical"/>
