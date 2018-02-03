@@ -47,7 +47,7 @@ class ClearDatabaseTask(context: Context) : ToastingAsyncTask(context) {
     }
 
     private fun delete(uri: Uri): Int {
-        if (context.contentResolver == null) return 0
+        if (context?.contentResolver == null) return 0
         val count = context.contentResolver.delete(uri, null, null)
         Timber.i("Removed %1\$,d %2\$s", count, uri.lastPathSegment)
         return count

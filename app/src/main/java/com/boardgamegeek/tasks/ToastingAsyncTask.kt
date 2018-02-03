@@ -14,10 +14,12 @@ abstract class ToastingAsyncTask(context: Context?) : AsyncTask<Void, Void, Bool
     @SuppressLint("StaticFieldLeak") protected val context: Context? = context?.applicationContext
 
     @get:StringRes
-    protected abstract val successMessageResource: Int
+    protected open val successMessageResource: Int
+        get() = 0
 
     @get:StringRes
-    protected abstract val failureMessageResource: Int
+    protected open val failureMessageResource: Int
+        get() = 0
 
     override fun onPostExecute(result: Boolean) {
         @StringRes val resId = if (result) successMessageResource else failureMessageResource

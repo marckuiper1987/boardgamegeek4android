@@ -86,6 +86,7 @@ public class DialogUtils {
 	}
 
 	public static Dialog createConfirmationDialog(Context context, int messageId, OnClickListener okListener, @StringRes int positiveButtonTextId) {
+		// TODO replace with Anko
 		AlertDialog.Builder builder = new AlertDialog.Builder(context)
 			.setCancelable(true)
 			.setNegativeButton(R.string.cancel, null)
