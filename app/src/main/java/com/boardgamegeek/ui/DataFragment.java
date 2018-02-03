@@ -28,7 +28,6 @@ import com.boardgamegeek.events.ImportFinishedEvent;
 import com.boardgamegeek.events.ImportProgressEvent;
 import com.boardgamegeek.export.CollectionViewExportTask;
 import com.boardgamegeek.export.CollectionViewImportTask;
-import com.boardgamegeek.export.Constants;
 import com.boardgamegeek.export.GameExportTask;
 import com.boardgamegeek.export.GameImportTask;
 import com.boardgamegeek.export.JsonExportTask;
@@ -53,6 +52,8 @@ import butterknife.Unbinder;
 import hugo.weaving.DebugLog;
 import timber.log.Timber;
 
+import static com.boardgamegeek.export.ConstantsKt.*;
+
 public class DataFragment extends Fragment implements Listener {
 	private static final int REQUEST_EXPORT = 1000;
 	private static final int REQUEST_IMPORT = 2000;
@@ -71,9 +72,9 @@ public class DataFragment extends Fragment implements Listener {
 		View root = inflater.inflate(R.layout.fragment_data, container, false);
 
 		unbinder = ButterKnife.bind(this, root);
-		createDataRow(Constants.TYPE_COLLECTION_VIEWS, R.string.backup_type_collection_view, R.string.backup_description_collection_view);
-		createDataRow(Constants.TYPE_GAMES, R.string.backup_type_game, R.string.backup_description_game);
-		createDataRow(Constants.TYPE_USERS, R.string.backup_type_user, R.string.backup_description_user);
+		createDataRow(TYPE_COLLECTION_VIEWS, R.string.backup_type_collection_view, R.string.backup_description_collection_view);
+		createDataRow(TYPE_GAMES, R.string.backup_type_game, R.string.backup_description_game);
+		createDataRow(TYPE_USERS, R.string.backup_type_user, R.string.backup_description_user);
 
 		return root;
 	}
@@ -110,11 +111,11 @@ public class DataFragment extends Fragment implements Listener {
 	private JsonExportTask getExportTask(String type, Uri uri) {
 		if (TextUtils.isEmpty(type)) return null;
 		switch (type) {
-			case Constants.TYPE_COLLECTION_VIEWS:
+			case TYPE_COLLECTION_VIEWS:
 				return new CollectionViewExportTask(getContext(), uri);
-			case Constants.TYPE_GAMES:
+			case TYPE_GAMES:
 				return new GameExportTask(getContext(), uri);
-			case Constants.TYPE_USERS:
+			case TYPE_USERS:
 				return new UserExportTask(getContext(), uri);
 		}
 		return null;
@@ -124,11 +125,11 @@ public class DataFragment extends Fragment implements Listener {
 	private JsonImportTask getImportTask(String type, Uri uri) {
 		if (TextUtils.isEmpty(type)) return null;
 		switch (type) {
-			case Constants.TYPE_COLLECTION_VIEWS:
+			case TYPE_COLLECTION_VIEWS:
 				return new CollectionViewImportTask(getContext(), uri);
-			case Constants.TYPE_GAMES:
+			case TYPE_GAMES:
 				return new GameImportTask(getContext(), uri);
-			case Constants.TYPE_USERS:
+			case TYPE_USERS:
 				return new UserImportTask(getContext(), uri);
 		}
 		return null;
