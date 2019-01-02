@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.drawerlayout.widget.DrawerLayout
-	android:id="@+id/drawer_layout"
+	android:id="@+id/drawerLayout"
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -104,13 +104,13 @@
 	</androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 	<ScrollView
-		android:id="@+id/drawer_container"
+		android:id="@+id/drawerListContainer"
 		style="@style/DrawerListContainer"
 		android:layout_marginTop="@dimen/drawer_status_bar_buffer_negative"
 		android:fitsSystemWindows="true">
 
 		<LinearLayout
-			android:id="@+id/left_drawer"
+			android:id="@+id/drawerList"
 			style="@style/DrawerList"/>
 	</ScrollView>
 

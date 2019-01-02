@@ -6,6 +6,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.ActionBarDrawerToggle
 import com.boardgamegeek.R
+import kotlinx.android.synthetic.main.activity_drawer_base.*
 
 abstract class TopLevelActivity : DrawerActivity() {
     private lateinit var activityTitle: CharSequence

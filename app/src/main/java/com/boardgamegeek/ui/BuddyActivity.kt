@@ -112,7 +112,7 @@ class BuddyActivity : SimpleSinglePaneActivity() {
         if (message == null || message.isBlank()) {
             snackbar?.dismiss()
         } else {
-            snackbar = rootContainer?.longSnackbar(message)
+            //snackbar = rootContainer?.longSnackbar(message)
         }
     }
 
