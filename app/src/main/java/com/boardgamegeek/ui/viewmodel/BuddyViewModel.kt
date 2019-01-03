@@ -101,6 +101,10 @@ class BuddyViewModel(application: Application) : AndroidViewModel(application) {
         setPlayerName(newName)
     }
 
+    fun verifyUser(username: String): LiveData<RefreshableResource<UserEntity>> {
+        return userRepository.fetchUser(username)
+    }
+
     fun addUsernameToPlayer(username: String) {
         if (username.isBlank()) return
         if (user.value?.second != TYPE_PLAYER) return
@@ -110,6 +114,7 @@ class BuddyViewModel(application: Application) : AndroidViewModel(application) {
         SyncService.sync(getApplication(), SyncService.FLAG_SYNC_PLAYS_UPLOAD)
         setUpdateMessage(getApplication<BggApplication>().getString(R.string.msg_player_add_username, username, playerName))
         setUsername(username)
+        // TODO sync this individual user and add the nickname
     }
 
     private fun setUpdateMessage(message: String) {

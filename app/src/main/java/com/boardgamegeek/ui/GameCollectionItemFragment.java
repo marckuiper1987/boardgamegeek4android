@@ -73,6 +73,8 @@ import icepick.Icepick;
 import icepick.State;
 import timber.log.Timber;
 
+// KOTLIN!!!
+
 public class GameCollectionItemFragment extends Fragment implements LoaderCallbacks<Cursor> {
 	private static final String KEY_GAME_ID = "GAME_ID";
 	private static final String KEY_COLLECTION_ID = "COLLECTION_ID";

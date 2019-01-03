@@ -7,8 +7,8 @@ data class UserEntity(
         val firstName: String,
         val lastName: String,
         val avatarUrlRaw: String,
-        val playNickname: String,
-        val updatedTimestamp: Long
+        val playNickname: String = "",
+        val updatedTimestamp: Long = 0L
 ) {
     val fullName = "$firstName $lastName".trim()
 

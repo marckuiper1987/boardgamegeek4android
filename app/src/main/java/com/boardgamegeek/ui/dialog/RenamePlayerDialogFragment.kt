@@ -15,6 +15,7 @@ class RenamePlayerDialogFragment : AbstractEditTextDialogFragment() {
     override val titleResId
         get() = R.string.title_edit_player
 
+    // TODO get from view model
     override val originalText
         get() = arguments?.getString(KEY_TEXT)
 

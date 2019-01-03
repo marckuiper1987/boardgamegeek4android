@@ -9,12 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.requestFocus
 import com.boardgamegeek.ui.viewmodel.BuddyViewModel
 import kotlinx.android.synthetic.main.dialog_edit_text.*
 import org.jetbrains.anko.support.v4.act
+import org.jetbrains.anko.support.v4.toast
 
 class EditUsernameDialogFragment : DialogFragment() {
     private lateinit var layout: View
@@ -32,7 +34,11 @@ class EditUsernameDialogFragment : DialogFragment() {
                 .setView(layout)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok) { _, _ ->
-                    viewModel.addUsernameToPlayer(editText.text.trim().toString())
+                    val username = editText.text.trim().toString()
+                    viewModel.verifyUser(username).observe(this, Observer {
+                        toast(it.data?.userName ?: "")
+                    })
+                    //viewModel.addUsernameToPlayer(username)
                 }
 
         return builder.create().apply {

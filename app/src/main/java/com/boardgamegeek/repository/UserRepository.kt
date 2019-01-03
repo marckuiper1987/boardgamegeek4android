@@ -9,6 +9,7 @@ import com.boardgamegeek.entities.RefreshableResource
 import com.boardgamegeek.entities.UserEntity
 import com.boardgamegeek.extensions.isOlderThan
 import com.boardgamegeek.io.Adapter
+import com.boardgamegeek.livedata.NetworkLoader
 import com.boardgamegeek.livedata.RefreshableResourceLoader
 import com.boardgamegeek.model.User
 import com.boardgamegeek.pref.SyncPrefs
@@ -43,6 +44,29 @@ class UserRepository(val application: BggApplication) {
             override fun saveCallResult(result: User) {
                 userDao.saveUser(result)
             }
+        }.asLiveData()
+    }
+
+    fun fetchUser(username: String): LiveData<RefreshableResource<UserEntity>> {
+        return object : NetworkLoader<UserEntity, User>(application) {
+            override val typeDescriptionResId: Int
+                get() = R.string.title_user
+
+            override fun createCall(): Call<User> {
+                return Adapter.createForXml().user(username)
+            }
+
+            override fun parseResult(result: User): UserEntity {
+                return UserEntity(
+                        BggContract.INVALID_ID.toLong(),
+                        result.id,
+                        result.name,
+                        result.firstName,
+                        result.lastName,
+                        result.avatarUrl
+                )
+            }
+
         }.asLiveData()
     }
 
