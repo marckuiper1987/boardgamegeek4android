@@ -22,6 +22,7 @@ import com.crashlytics.android.core.CrashlyticsCore;
 import com.facebook.stetho.Stetho;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.jakewharton.picasso.OkHttp3Downloader;
+import com.jakewharton.threetenabp.AndroidThreeTen;
 import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
@@ -86,6 +87,8 @@ public class BggApplication extends MultiDexApplication {
 			String deviceToken = instanceIdResult.getToken();
 			Timber.i("Firebase token is %s", deviceToken);
 		});
+
+		AndroidThreeTen.init(this);
 	}
 
 	private void initializeFabric() {
