@@ -59,6 +59,13 @@
 				android:value=".ui.HomeActivity"/>
 		</activity>
 		<activity
+			android:name=".ui.CalendarActivity"
+			android:label="@string/title_calendar">
+			<meta-data
+				android:name="android.support.PARENT_ACTIVITY"
+				android:value=".ui.HomeActivity"/>
+		</activity>
+		<activity
 			android:name=".ui.DesignersActivity"
 			android:label="@string/title_designers">
 			<meta-data

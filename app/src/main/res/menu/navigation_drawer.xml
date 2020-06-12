@@ -12,6 +12,10 @@
 			android:icon="@drawable/ic_collection"
 			android:title="@string/title_collection_details"/>
 		<item
+			android:id="@+id/calendar"
+			android:icon="@drawable/ic_collection"
+			android:title="@string/title_calendar"/>
+		<item
 			android:id="@+id/plays"
 			android:icon="@drawable/ic_plays"
 			android:title="@string/title_plays"/>

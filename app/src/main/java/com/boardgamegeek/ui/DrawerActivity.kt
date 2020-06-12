@@ -132,6 +132,7 @@ abstract class DrawerActivity : BaseActivity() {
             when (menuItemId) {
                 R.id.collection -> startActivity<CollectionActivity>()
                 R.id.collection_details -> startActivity<CollectionDetailsActivity>()
+                R.id.calendar -> startActivity<CalendarActivity>()
                 R.id.search -> startActivity<SearchResultsActivity>()
                 R.id.hotness -> startActivity<HotnessActivity>()
                 R.id.top_games -> startActivity<TopGamesActivity>()
