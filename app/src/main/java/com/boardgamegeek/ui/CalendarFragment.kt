@@ -1,15 +1,18 @@
 package com.boardgamegeek.ui
 
-import androidx.lifecycle.ViewModelProviders
+import android.content.Context
 import android.os.Bundle
 import android.util.TypedValue
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.BaseAdapter
 import android.widget.TextView
 import androidx.core.view.children
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.boardgamegeek.R
+import com.boardgamegeek.entities.PlayEntity
 import com.kizitonwose.calendarview.model.CalendarDay
 import com.kizitonwose.calendarview.model.CalendarMonth
 import com.kizitonwose.calendarview.model.DayOwner
@@ -17,7 +20,6 @@ import com.kizitonwose.calendarview.ui.DayBinder
 import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder
 import com.kizitonwose.calendarview.ui.ViewContainer
 import kotlinx.android.synthetic.main.calendar_day.view.*
-import kotlinx.android.synthetic.main.calendar_header.*
 import kotlinx.android.synthetic.main.calendar_header.view.*
 import kotlinx.android.synthetic.main.fragment_calendar.*
 import org.threeten.bp.DayOfWeek
@@ -25,13 +27,37 @@ import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
 import org.threeten.bp.format.TextStyle
 import org.threeten.bp.temporal.WeekFields
+import java.lang.String
 import java.util.*
+
+class GridAdapter(
+    private val context: Context,
+    private val plays: List<PlayEntity>
+): BaseAdapter() {
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+        return plays[position].let { play ->
+//            ImageView(context).apply {
+//                loadThumbnail(play.thumbnailUrl)
+//            }
+            TextView(context).apply {
+                text = play.gameName
+            }
+        }
+    }
+
+    override fun getItem(position: Int) = plays[position]
+
+    override fun getItemId(position: Int) = plays[position].dateInMillis
+
+    override fun getCount(): Int = plays.count()
+}
 
 class CalendarFragment(
     private val listener: Listener
 ) : Fragment() {
 
-    private lateinit var viewModel: CalendarViewModel
+    private val viewModel by activityViewModels<CalendarViewModel>()
     private var selectedDate: LocalDate? = null
 
     interface Listener {
@@ -64,6 +90,7 @@ class CalendarFragment(
             lateinit var day: CalendarDay
 
             val textView = view.calendarDayText
+            val gridView = view.calendarDayGrid
 
             init {
                 view.setOnClickListener {
@@ -91,6 +118,10 @@ class CalendarFragment(
                 }
                 else {
                     container.textView.setTextColor(resources.getColor(R.color.primary_dark))
+                }
+
+                context?.let {
+                    container.gridView.adapter = GridAdapter(it, viewModel.getPlaysByDay(day))
                 }
             }
         }
@@ -126,28 +157,6 @@ class CalendarFragment(
             }
         }
     }
-
-//    override fun onActivityCreated(savedInstanceState: Bundle?) {
-//        super.onActivityCreated(savedInstanceState)
-//        viewModel = ViewModelProviders.of(this).get(CalendarViewModel::class.java)
-//
-//        calendarView.dayBinder = object : DayBinder<DayViewContainer> {
-//            // Called only when a new container is needed.
-//            override fun create(view: View) = DayViewContainer(view)
-//
-//            // Called every time we need to reuse a container.
-//            override fun bind(container: DayViewContainer, day: CalendarDay) {
-//                container.textView.text = day.date.dayOfMonth.toString()
-//            }
-//        }
-//
-//        val currentMonth = YearMonth.now()
-//        val firstMonth = currentMonth.minusMonths(10)
-//        val lastMonth = currentMonth.plusMonths(10)
-//        val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
-//        calendarView.setup(firstMonth, lastMonth, firstDayOfWeek)
-//        calendarView.scrollToMonth(currentMonth)
-//    }
 }
 
 fun daysOfWeekFromLocale(): Array<DayOfWeek> {
