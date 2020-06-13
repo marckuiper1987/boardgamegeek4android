@@ -7,11 +7,11 @@
 	android:layout_height="match_parent"
 	tools:context=".ui.CalendarFragment">
 
-	<TextView
-		android:id="@+id/message"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="CalendarFragment"
+	<com.kizitonwose.calendarview.CalendarView
+		android:id="@+id/calendarView"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		app:cv_dayViewResource="@layout/calendar_day"
 		app:layout_constraintBottom_toBottomOf="parent"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
