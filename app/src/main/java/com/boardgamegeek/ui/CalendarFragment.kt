@@ -11,8 +11,10 @@ import android.widget.TextView
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.LiveData
 import com.boardgamegeek.R
-import com.boardgamegeek.entities.PlayEntity
+import com.boardgamegeek.entities.GameEntity
+import com.boardgamegeek.entities.RefreshableResource
 import com.kizitonwose.calendarview.model.CalendarDay
 import com.kizitonwose.calendarview.model.CalendarMonth
 import com.kizitonwose.calendarview.model.DayOwner
@@ -27,28 +29,28 @@ import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
 import org.threeten.bp.format.TextStyle
 import org.threeten.bp.temporal.WeekFields
-import java.lang.String
 import java.util.*
 
 class GridAdapter(
     private val context: Context,
-    private val plays: List<PlayEntity>
+    private val plays: Set<LiveData<RefreshableResource<GameEntity>>>
 ): BaseAdapter() {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        return plays[position].let { play ->
-//            ImageView(context).apply {
-//                loadThumbnail(play.thumbnailUrl)
+        return CalendarDayView(context, plays)
+//        return plays[position].let { play ->
+////            ImageView(context).apply {
+////                loadThumbnail(play.thumbnailUrl)
+////            }
+//            TextView(context).apply {
+//                text = play.gameName
 //            }
-            TextView(context).apply {
-                text = play.gameName
-            }
-        }
+//        }
     }
 
-    override fun getItem(position: Int) = plays[position]
+    override fun getItem(position: Int): LiveData<RefreshableResource<GameEntity>> = plays.elementAt(position)
 
-    override fun getItemId(position: Int) = plays[position].dateInMillis
+    override fun getItemId(position: Int) = position.toLong()
 
     override fun getCount(): Int = plays.count()
 }
@@ -121,7 +123,7 @@ class CalendarFragment(
                 }
 
                 context?.let {
-                    container.gridView.adapter = GridAdapter(it, viewModel.getPlaysByDay(day))
+                    container.gridView.adapter = GridAdapter(it, viewModel.getPlayedGamesByDay(day))
                 }
             }
         }
