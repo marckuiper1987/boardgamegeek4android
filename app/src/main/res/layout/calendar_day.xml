@@ -14,8 +14,8 @@
 		android:textSize="16sp"
 		tools:text="22" />
 
-	<GridView
-		android:id="@+id/calendarDayGrid"
+	<FrameLayout
+		android:id="@+id/calendarDayFrame"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent" />
 

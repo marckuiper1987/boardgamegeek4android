@@ -12,34 +12,8 @@ import com.boardgamegeek.entities.RefreshableResource
 import com.boardgamegeek.extensions.loadThumbnail
 import kotlinx.android.synthetic.main.calendar_day_view.view.*
 
-
-
-/*
-
-21
-
-- 1: 1
-- 2: 1
-- 3: 1
-- 4: 1
-
-
-
-
-
-- 1: 4
-- 2: 4
-- 3: 4
-- 4: (9)
-    - 1: 1
-    - 2: 1
-    - 3: 3
-    - 4: 4
-
-*/
-
 class BoxedGameImages(
-    private val games: Set<LiveData<RefreshableResource<GameEntity>>>
+    private val games: Set<GameEntity>
 ) {
 
     private val boxes = 4
@@ -78,9 +52,9 @@ class BoxedGameImages(
         else emptySet()
 
     fun gamesPerBox() =
-        mutableMapOf<Int, Set<LiveData<RefreshableResource<GameEntity>>>>().apply {
-            for (i in 1..numberOfBoxes) {
-                this[i-1] = gamesForBox(i)
+        mutableMapOf<Int, Set<GameEntity>>().apply {
+            for (i in 0 until numberOfBoxes) {
+                this[i] = gamesForBox(i)
             }
         }
 
@@ -90,7 +64,7 @@ class BoxedGameImages(
 
 class CalendarDayView(
     context: Context,
-    games: Set<LiveData<RefreshableResource<GameEntity>>>
+    games: Set<GameEntity>
 ): FrameLayout(context) {
 
     init {
@@ -111,9 +85,7 @@ class CalendarDayView(
                 view.addView(
                         if (gamesForBox.value.count() == 1)
                             ImageView(context).apply {
-                                gamesForBox.value.first().observeForever {
-                                    loadThumbnail(it.data?.thumbnailUrl)
-                                }
+                                loadThumbnail(gamesForBox.value.first().thumbnailUrl)
                             }
                         else
                             CalendarDayView(context, gamesForBox.value))
@@ -121,5 +93,9 @@ class CalendarDayView(
 
             calendar_day_view.addView(view)
         }
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
     }
 }

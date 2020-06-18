@@ -31,29 +31,23 @@ import org.threeten.bp.format.TextStyle
 import org.threeten.bp.temporal.WeekFields
 import java.util.*
 
-class GridAdapter(
-    private val context: Context,
-    private val plays: Set<LiveData<RefreshableResource<GameEntity>>>
-): BaseAdapter() {
-
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        return CalendarDayView(context, plays)
-//        return plays[position].let { play ->
-////            ImageView(context).apply {
-////                loadThumbnail(play.thumbnailUrl)
-////            }
-//            TextView(context).apply {
-//                text = play.gameName
-//            }
-//        }
-    }
-
-    override fun getItem(position: Int): LiveData<RefreshableResource<GameEntity>> = plays.elementAt(position)
-
-    override fun getItemId(position: Int) = position.toLong()
-
-    override fun getCount(): Int = plays.count()
-}
+//class GridAdapter(
+//    private val context: Context,
+//    private val plays: Set<GameEntity>
+//): BaseAdapter() {
+//
+//    override fun getView(position: Int, convertView: View?, parent: ViewGroup?) =
+//        CalendarDayView(context, plays)
+//
+//    override fun getItem(position: Int) =
+//        plays.elementAt(position)
+//
+//    override fun getItemId(position: Int) =
+//        position.toLong()
+//
+//    override fun getCount(): Int =
+//        plays.count()
+//}
 
 class CalendarFragment(
     private val listener: Listener
@@ -92,7 +86,7 @@ class CalendarFragment(
             lateinit var day: CalendarDay
 
             val textView = view.calendarDayText
-            val gridView = view.calendarDayGrid
+            val frame = view.calendarDayFrame
 
             init {
                 view.setOnClickListener {
@@ -122,8 +116,15 @@ class CalendarFragment(
                     container.textView.setTextColor(resources.getColor(R.color.primary_dark))
                 }
 
-                context?.let {
-                    container.gridView.adapter = GridAdapter(it, viewModel.getPlayedGamesByDay(day))
+                context?.let { context ->
+                    if (day.date == LocalDate.of(2020, 6, 18)) {
+                        viewModel.getPlayedGamesByDay(day).observeForever { games ->
+                            container.frame.addView(
+                                CalendarDayView(context, games),
+                                ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                            )
+                        }
+                    }
                 }
             }
         }
