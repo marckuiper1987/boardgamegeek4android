@@ -5,15 +5,17 @@ import android.widget.FrameLayout
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import com.boardgamegeek.R
+import com.boardgamegeek.entities.CollectionItemEntity
 import com.boardgamegeek.entities.GameEntity
-import com.boardgamegeek.entities.RefreshableResource
 import com.boardgamegeek.extensions.loadThumbnail
-import kotlinx.android.synthetic.main.calendar_day_view.view.*
+import kotlinx.android.synthetic.main.calendar_day_view.view.calendar_day_view
 
 class BoxedGameImages(
-    private val games: Set<GameEntity>
+    private val games: Set<LiveData<CollectionItemEntity>>
 ) {
 
     private val boxes = 4
@@ -52,7 +54,7 @@ class BoxedGameImages(
         else emptySet()
 
     fun gamesPerBox() =
-        mutableMapOf<Int, Set<GameEntity>>().apply {
+        mutableMapOf<Int, Set<LiveData<CollectionItemEntity>>>().apply {
             for (i in 0 until numberOfBoxes) {
                 this[i] = gamesForBox(i)
             }
@@ -64,7 +66,8 @@ class BoxedGameImages(
 
 class CalendarDayView(
     context: Context,
-    games: Set<GameEntity>
+    owner: LifecycleOwner,
+    games: Set<LiveData<CollectionItemEntity>>
 ): FrameLayout(context) {
 
     init {
@@ -82,13 +85,16 @@ class CalendarDayView(
 
         if (view != null) {
             boxes.gamesPerBox().forEach { gamesForBox ->
+                if (gamesForBox.value.isEmpty()) return@forEach
                 view.addView(
-                        if (gamesForBox.value.count() == 1)
-                            ImageView(context).apply {
-                                loadThumbnail(gamesForBox.value.first().thumbnailUrl)
-                            }
-                        else
-                            CalendarDayView(context, gamesForBox.value))
+                    if (gamesForBox.value.count() == 1)
+                        ImageView(context).apply {
+                            gamesForBox.value.first().observe(owner, Observer { game ->
+                                loadThumbnail(game.thumbnailUrl)
+                            })
+                        }
+                    else
+                        CalendarDayView(context, owner, gamesForBox.value))
             }
 
             calendar_day_view.addView(view)

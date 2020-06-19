@@ -1,53 +1,32 @@
 package com.boardgamegeek.ui
 
-import android.content.Context
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.TextView
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import com.boardgamegeek.R
-import com.boardgamegeek.entities.GameEntity
-import com.boardgamegeek.entities.RefreshableResource
 import com.kizitonwose.calendarview.model.CalendarDay
 import com.kizitonwose.calendarview.model.CalendarMonth
 import com.kizitonwose.calendarview.model.DayOwner
 import com.kizitonwose.calendarview.ui.DayBinder
 import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder
 import com.kizitonwose.calendarview.ui.ViewContainer
-import kotlinx.android.synthetic.main.calendar_day.view.*
-import kotlinx.android.synthetic.main.calendar_header.view.*
-import kotlinx.android.synthetic.main.fragment_calendar.*
+import kotlinx.android.synthetic.main.calendar_day.view.calendarDayFrame
+import kotlinx.android.synthetic.main.calendar_day.view.calendarDayText
+import kotlinx.android.synthetic.main.calendar_header.view.legendLayout
+import kotlinx.android.synthetic.main.fragment_calendar.calendarView
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
 import org.threeten.bp.format.TextStyle
 import org.threeten.bp.temporal.WeekFields
-import java.util.*
-
-//class GridAdapter(
-//    private val context: Context,
-//    private val plays: Set<GameEntity>
-//): BaseAdapter() {
-//
-//    override fun getView(position: Int, convertView: View?, parent: ViewGroup?) =
-//        CalendarDayView(context, plays)
-//
-//    override fun getItem(position: Int) =
-//        plays.elementAt(position)
-//
-//    override fun getItemId(position: Int) =
-//        position.toLong()
-//
-//    override fun getCount(): Int =
-//        plays.count()
-//}
+import java.util.Locale
 
 class CalendarFragment(
     private val listener: Listener
@@ -118,12 +97,12 @@ class CalendarFragment(
 
                 context?.let { context ->
                     if (day.date == LocalDate.of(2020, 6, 18)) {
-                        viewModel.getPlayedGamesByDay(day).observeForever { games ->
+                        viewModel.getPlaysByDay(day).observe(viewLifecycleOwner, Observer { plays ->
                             container.frame.addView(
-                                CalendarDayView(context, games),
+                                CalendarDayView(context, viewLifecycleOwner, viewModel.getGamesFromPlays(plays)),
                                 ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                             )
-                        }
+                        })
                     }
                 }
             }

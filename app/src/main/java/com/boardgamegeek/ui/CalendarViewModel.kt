@@ -1,23 +1,38 @@
 package com.boardgamegeek.ui
 
 import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import com.boardgamegeek.entities.CollectionItemEntity
 import com.boardgamegeek.entities.GameEntity
 import com.boardgamegeek.entities.PlayEntity
-import com.boardgamegeek.repository.GameRepository
+import com.boardgamegeek.repository.GameCollectionRepository
 import com.boardgamegeek.repository.PlayRepository
 import com.kizitonwose.calendarview.model.CalendarDay
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDate
 import org.threeten.bp.ZoneId
+import kotlin.collections.List
+import kotlin.collections.Set
+import kotlin.collections.emptyList
+import kotlin.collections.forEach
+import kotlin.collections.getOrPut
+import kotlin.collections.groupBy
+import kotlin.collections.map
+import kotlin.collections.mutableMapOf
+import kotlin.collections.mutableSetOf
+import kotlin.collections.set
+import kotlin.collections.toSet
 
 class CalendarViewModel(application: Application) : AndroidViewModel(application) {
 
     private val playRepository = PlayRepository(getApplication())
-    private val gameRepository = GameRepository(getApplication())
+    private val gameCollectionRepository = GameCollectionRepository(getApplication())
 
     private val playsByDay = MutableLiveData(mutableMapOf<LocalDate, List<PlayEntity>>())
-    private val games = MutableLiveData(mutableMapOf<Int, GameEntity>())
+    private val games = mutableMapOf<Int, MutableLiveData<CollectionItemEntity>>()
 
     init {
 
@@ -41,44 +56,29 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
 
             gameIds.forEach { gameId ->
                 // FIXME: does this keep refreshing game fetch from BGG?
-                gameRepository.getGame(gameId).observeForever { game ->
+                gameCollectionRepository.getCollectionItems(gameId).observeForever { game ->
                     if (game.data != null) {
-                        games.value = (games.value ?: mutableMapOf()).apply {
-                            this[game.data.id] = game.data
-                        }
+                        games.getOrPut(gameId) { MutableLiveData() }.value = game.data.firstOrNull() // TODO: List?
                     }
                 }
             }
         }
     }
 
-    fun getPlaysByDay(day: CalendarDay) =
+    fun getPlaysByDay(day: CalendarDay): LiveData<List<PlayEntity>> =
         Transformations.map(playsByDay) { playsByDay ->
             playsByDay[day.date] ?: emptyList()
         }
 
-    fun getPlayedGamesByDay(day: CalendarDay) =
-        // TODO: this triggers on each individual game being added to games list
-        getPlaysByDay(day).combineWith(games) { plays, games ->
-            if (plays == null || games == null)
-                emptySet()
-            else
-                plays.mapNotNull { games[it.gameId] }.toSet()
-        }
-}
+    fun getGamesFromPlays(plays: List<PlayEntity>): Set<LiveData<CollectionItemEntity>> =
+        plays
+            .map { games.getOrPut(it.gameId) { MutableLiveData() } }
+            .toSet()
 
-// TODO: put in extension file
-// https://stackoverflow.com/questions/50599830/how-to-combine-two-live-data-one-after-the-other
-fun <T, K, R> LiveData<T>.combineWith(
-        liveData: LiveData<K>,
-        block: (T?, K?) -> R
-): LiveData<R> {
-    val result = MediatorLiveData<R>()
-    result.addSource(this) {
-        result.value = block.invoke(this.value, liveData.value)
-    }
-    result.addSource(liveData) {
-        result.value = block.invoke(this.value, liveData.value)
-    }
-    return result
+//    fun getPlayedGamesByDay(day: CalendarDay): Set<LiveData<GameEntity>> =
+//        getPlaysByDay(day)
+//            .value
+//            ?.map { games.getOrPut(it.gameId) { MutableLiveData() } }
+//            ?.toSet()
+//            ?: emptySet()
 }
