@@ -38,7 +38,11 @@ class GameCollectionRepository(val application: BggApplication) {
     /**
      * Get a game from the database and potentially refresh it from BGG.
      */
-    fun getCollectionItems(gameId: Int, subType: String = BggService.THING_SUBTYPE_BOARDGAME): LiveData<RefreshableResource<List<CollectionItemEntity>>> {
+    fun getCollectionItems(
+        gameId: Int,
+        subType: String = BggService.THING_SUBTYPE_BOARDGAME,
+        allowRefresh: Boolean = true // FIXME: this is a hack
+    ): LiveData<RefreshableResource<List<CollectionItemEntity>>> {
         return object : RefreshableResourceLoader<List<CollectionItemEntity>, CollectionResponse>(application) {
             private var timestamp = 0L
 
@@ -49,7 +53,7 @@ class GameCollectionRepository(val application: BggApplication) {
             override fun shouldRefresh(data: List<CollectionItemEntity>?): Boolean {
                 if (gameId == BggContract.INVALID_ID || username == null) return false
                 val syncTimestamp = data?.minBy { it.syncTimestamp }?.syncTimestamp ?: 0L
-                return syncTimestamp.isOlderThan(refreshMinutes, TimeUnit.MINUTES)
+                return allowRefresh && syncTimestamp.isOlderThan(refreshMinutes, TimeUnit.MINUTES)
             }
 
             override fun createCall(page: Int): Call<CollectionResponse> {

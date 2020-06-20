@@ -47,6 +47,8 @@ class CalendarFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        viewModel.initialize(viewLifecycleOwner)
+
 //        recyclerView.apply {
 //
 //        }
@@ -98,6 +100,7 @@ class CalendarFragment(
                 context?.let { context ->
                     if (day.date == LocalDate.of(2020, 6, 18)) {
                         viewModel.getPlaysByDay(day).observe(viewLifecycleOwner, Observer { plays ->
+                            container.frame.removeAllViews()
                             container.frame.addView(
                                 CalendarDayView(context, viewLifecycleOwner, viewModel.getGamesFromPlays(plays)),
                                 ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)

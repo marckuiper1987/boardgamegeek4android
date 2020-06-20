@@ -2,17 +2,15 @@ package com.boardgamegeek.ui
 
 import android.content.Context
 import android.widget.FrameLayout
-import android.widget.GridLayout
-import android.widget.ImageView
-import android.widget.LinearLayout
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.boardgamegeek.R
 import com.boardgamegeek.entities.CollectionItemEntity
-import com.boardgamegeek.entities.GameEntity
 import com.boardgamegeek.extensions.loadThumbnail
-import kotlinx.android.synthetic.main.calendar_day_view.view.calendar_day_view
+import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_1
+import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_2
+import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_3
 
 class BoxedGameImages(
     private val games: Set<LiveData<CollectionItemEntity>>
@@ -45,12 +43,17 @@ class BoxedGameImages(
         }
     }
 
-    private fun gamesForBox(box: Int) =
-        if (gamesPerBox.containsKey(box))
+    fun gamesForBox(box: Int) =
+        if (gamesPerBox.containsKey(box)) {
+
+            val indexValues = gamesPerBox.filterKeys { it < box }
+            val fromIndex = if (indexValues.count() > 0) indexValues.values.reduce { acc, i -> acc + i } else 0
+
             games.toList().subList(
-                fromIndex = gamesPerBox.getOrElse(box-1) { 0 },
-                toIndex = gamesPerBox.getOrElse(box) { 0 }
+                fromIndex = fromIndex,
+                toIndex = fromIndex + gamesPerBox.getOrElse(box) { 0 }
             ).toSet()
+        }
         else emptySet()
 
     fun gamesPerBox() =
@@ -71,37 +74,62 @@ class CalendarDayView(
 ): FrameLayout(context) {
 
     init {
-        inflate(context, R.layout.calendar_day_view, this)
+//        inflate(context, R.layout.calendar_day_view, this)
 
         val boxes = BoxedGameImages(games)
 
-        val view = when (boxes.numberOfBoxes) {
-            1 -> FrameLayout(context)
-            2 -> LinearLayout(context)
-            3 -> LinearLayout(context)
-            4 -> GridLayout(context)
-            else -> null
-        }
+//        val view = when (boxes.numberOfBoxes) {
+//            1 -> FrameLayout(context)
+//            2 -> LinearLayout(context)
+//            3 -> LinearLayout(context).apply {
+//                orientation = LinearLayout.VERTICAL
+//                layoutParams = LinearLayout.LayoutParams(
+//                    LayoutParams.MATCH_PARENT,
+//                    LayoutParams.MATCH_PARENT
+//                )
+//                weightSum = 3F
+//            }
+//            4 -> GridLayout(context)
+//            else -> null
+//        }
 
-        if (view != null) {
-            boxes.gamesPerBox().forEach { gamesForBox ->
-                if (gamesForBox.value.isEmpty()) return@forEach
-                view.addView(
-                    if (gamesForBox.value.count() == 1)
-                        ImageView(context).apply {
-                            gamesForBox.value.first().observe(owner, Observer { game ->
-                                loadThumbnail(game.thumbnailUrl)
-                            })
-                        }
-                    else
-                        CalendarDayView(context, owner, gamesForBox.value))
+        when(boxes.numberOfBoxes) {
+            3 -> {
+                inflate(context, R.layout.calendar_day_three, this)
+
+                boxes.gamesForBox(0).first().observe(owner, Observer { game ->
+                    calendar_day_1.loadThumbnail(game.thumbnailUrl)
+                })
+                boxes.gamesForBox(1).first().observe(owner, Observer { game ->
+                    calendar_day_2.loadThumbnail(game.thumbnailUrl)
+                })
+                boxes.gamesForBox(2).first().observe(owner, Observer { game ->
+                    calendar_day_3.loadThumbnail(game.thumbnailUrl)
+                })
             }
-
-            calendar_day_view.addView(view)
         }
-    }
 
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
+//        if (view != null) {
+//            boxes.gamesPerBox().forEach { gamesForBox ->
+//                if (gamesForBox.value.isEmpty()) return@forEach
+//                view.addView(
+//                    if (gamesForBox.value.count() == 1)
+//                        ImageView(context).apply {
+//                            layoutParams = ViewGroup.LayoutParams(
+//                                LayoutParams.MATCH_PARENT,
+//                                0
+//                            ).apply {
+//                                weight
+//                            }
+//                            gamesForBox.value.first().observe(owner, Observer { game ->
+//                                loadThumbnail(game.thumbnailUrl)
+//                            })
+//                        }
+//                    else
+//                        CalendarDayView(context, owner, gamesForBox.value))
+//            }
+//
+//            calendar_day_view.addView(view)
+//        }
     }
 }

@@ -2,11 +2,12 @@ package com.boardgamegeek.ui
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
 import com.boardgamegeek.entities.CollectionItemEntity
-import com.boardgamegeek.entities.GameEntity
 import com.boardgamegeek.entities.PlayEntity
 import com.boardgamegeek.repository.GameCollectionRepository
 import com.boardgamegeek.repository.PlayRepository
@@ -14,17 +15,7 @@ import com.kizitonwose.calendarview.model.CalendarDay
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDate
 import org.threeten.bp.ZoneId
-import kotlin.collections.List
-import kotlin.collections.Set
-import kotlin.collections.emptyList
-import kotlin.collections.forEach
-import kotlin.collections.getOrPut
-import kotlin.collections.groupBy
-import kotlin.collections.map
-import kotlin.collections.mutableMapOf
-import kotlin.collections.mutableSetOf
 import kotlin.collections.set
-import kotlin.collections.toSet
 
 class CalendarViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -34,16 +25,16 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
     private val playsByDay = MutableLiveData(mutableMapOf<LocalDate, List<PlayEntity>>())
     private val games = mutableMapOf<Int, MutableLiveData<CollectionItemEntity>>()
 
-    init {
+    fun initialize(lifecycleOwner: LifecycleOwner) {
 
         val playsByDay = mutableMapOf<LocalDate, List<PlayEntity>>()
         val gameIds = mutableSetOf<Int>()
 
-        playRepository.getPlays().observeForever { plays ->
+        playRepository.getPlays().observe(lifecycleOwner, Observer { plays ->
 
             if (plays.data == null) {
                 this.playsByDay.value = mutableMapOf()
-                return@observeForever
+                return@Observer
             }
 
             plays.data
@@ -55,16 +46,19 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
             this.playsByDay.value = playsByDay
 
             gameIds.forEach { gameId ->
-                // FIXME: does this keep refreshing game fetch from BGG?
-                gameCollectionRepository.getCollectionItems(gameId).observeForever { game ->
-                    if (game.data != null) {
-                        games.getOrPut(gameId) { MutableLiveData() }.value = game.data.firstOrNull() // TODO: List?
-                    }
-                }
+                // TODO: fetch games in a single query
+                gameCollectionRepository
+                    .getCollectionItems(gameId, allowRefresh = false)
+                    .observe(lifecycleOwner, Observer { game ->
+                        if (game.data != null) {
+                            games.getOrPut(gameId) { MutableLiveData() }.value = game.data.firstOrNull() // TODO: List?
+                        }
+                    })
             }
-        }
+        })
     }
 
+    // TODO: move to PlayRepository?
     fun getPlaysByDay(day: CalendarDay): LiveData<List<PlayEntity>> =
         Transformations.map(playsByDay) { playsByDay ->
             playsByDay[day.date] ?: emptyList()
