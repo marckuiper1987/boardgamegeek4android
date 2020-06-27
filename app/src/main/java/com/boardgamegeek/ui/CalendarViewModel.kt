@@ -64,10 +64,13 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
             playsByDay[day.date] ?: emptyList()
         }
 
-    fun getGamesFromPlays(plays: List<PlayEntity>): Set<LiveData<CollectionItemEntity>> =
-        plays
-            .map { games.getOrPut(it.gameId) { MutableLiveData() } }
-            .toSet()
+    fun getGamesFromPlays(plays: List<PlayEntity>): LiveData<Set<MutableLiveData<CollectionItemEntity>>> =
+        // FIXME: note great, duplication with above
+        Transformations.map(playsByDay) { _ ->
+            plays
+                .map { games.getOrPut(it.gameId) { MutableLiveData() } }
+                .toSet()
+        }
 
 //    fun getPlayedGamesByDay(day: CalendarDay): Set<LiveData<GameEntity>> =
 //        getPlaysByDay(day)

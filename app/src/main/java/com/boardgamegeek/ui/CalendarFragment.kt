@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.calendar_day.view.calendarDayFrame
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDayText
 import kotlinx.android.synthetic.main.calendar_header.view.legendLayout
 import kotlinx.android.synthetic.main.fragment_calendar.calendarView
+import org.jetbrains.anko.firstChildOrNull
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
@@ -98,11 +99,15 @@ class CalendarFragment(
                 }
 
                 context?.let { context ->
-                    if (day.date == LocalDate.of(2020, 6, 18)) {
+                    if (day.date == LocalDate.of(2020, 6, 1)) {
                         viewModel.getPlaysByDay(day).observe(viewLifecycleOwner, Observer { plays ->
                             container.frame.removeAllViews()
                             container.frame.addView(
-                                CalendarDayView(context, viewLifecycleOwner, viewModel.getGamesFromPlays(plays)),
+                                CalendarDayView(context).apply {
+                                    viewModel.getGamesFromPlays(plays).observe(viewLifecycleOwner, Observer { games ->
+                                        setGames(games, viewLifecycleOwner)
+                                    })
+                                },
                                 ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                             )
                         })

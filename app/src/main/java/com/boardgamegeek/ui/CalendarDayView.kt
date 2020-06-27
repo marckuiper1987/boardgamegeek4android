@@ -1,6 +1,7 @@
 package com.boardgamegeek.ui
 
 import android.content.Context
+import android.util.AttributeSet
 import android.widget.FrameLayout
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
@@ -8,6 +9,7 @@ import androidx.lifecycle.Observer
 import com.boardgamegeek.R
 import com.boardgamegeek.entities.CollectionItemEntity
 import com.boardgamegeek.extensions.loadThumbnail
+import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_4
 import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_1
 import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_2
 import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_3
@@ -69,31 +71,32 @@ class BoxedGameImages(
 
 class CalendarDayView(
     context: Context,
-    owner: LifecycleOwner,
-    games: Set<LiveData<CollectionItemEntity>>
-): FrameLayout(context) {
+    attrs: AttributeSet? = null
+): FrameLayout(context, attrs) {
 
-    init {
-//        inflate(context, R.layout.calendar_day_view, this)
+    fun setGames(games: Set<LiveData<CollectionItemEntity>>, owner: LifecycleOwner) {
+        removeAllViews()
 
         val boxes = BoxedGameImages(games)
 
-//        val view = when (boxes.numberOfBoxes) {
-//            1 -> FrameLayout(context)
-//            2 -> LinearLayout(context)
-//            3 -> LinearLayout(context).apply {
-//                orientation = LinearLayout.VERTICAL
-//                layoutParams = LinearLayout.LayoutParams(
-//                    LayoutParams.MATCH_PARENT,
-//                    LayoutParams.MATCH_PARENT
-//                )
-//                weightSum = 3F
-//            }
-//            4 -> GridLayout(context)
-//            else -> null
-//        }
-
         when(boxes.numberOfBoxes) {
+            1 -> {
+                inflate(context, R.layout.calendar_day_one, this)
+
+                boxes.gamesForBox(0).first().observe(owner, Observer { game ->
+                    calendar_day_1.loadThumbnail(game.thumbnailUrl)
+                })
+            }
+            2 -> {
+                inflate(context, R.layout.calendar_day_two, this)
+
+                boxes.gamesForBox(0).first().observe(owner, Observer { game ->
+                    calendar_day_1.loadThumbnail(game.thumbnailUrl)
+                })
+                boxes.gamesForBox(1).first().observe(owner, Observer { game ->
+                    calendar_day_2.loadThumbnail(game.thumbnailUrl)
+                })
+            }
             3 -> {
                 inflate(context, R.layout.calendar_day_three, this)
 
@@ -107,29 +110,22 @@ class CalendarDayView(
                     calendar_day_3.loadThumbnail(game.thumbnailUrl)
                 })
             }
-        }
+            4 -> {
+                inflate(context, R.layout.calendar_day_four, this)
 
-//        if (view != null) {
-//            boxes.gamesPerBox().forEach { gamesForBox ->
-//                if (gamesForBox.value.isEmpty()) return@forEach
-//                view.addView(
-//                    if (gamesForBox.value.count() == 1)
-//                        ImageView(context).apply {
-//                            layoutParams = ViewGroup.LayoutParams(
-//                                LayoutParams.MATCH_PARENT,
-//                                0
-//                            ).apply {
-//                                weight
-//                            }
-//                            gamesForBox.value.first().observe(owner, Observer { game ->
-//                                loadThumbnail(game.thumbnailUrl)
-//                            })
-//                        }
-//                    else
-//                        CalendarDayView(context, owner, gamesForBox.value))
-//            }
-//
-//            calendar_day_view.addView(view)
-//        }
+                boxes.gamesForBox(0).first().observe(owner, Observer { game ->
+                    calendar_day_1.loadThumbnail(game.thumbnailUrl)
+                })
+                boxes.gamesForBox(1).first().observe(owner, Observer { game ->
+                    calendar_day_2.loadThumbnail(game.thumbnailUrl)
+                })
+                boxes.gamesForBox(2).first().observe(owner, Observer { game ->
+                    calendar_day_3.loadThumbnail(game.thumbnailUrl)
+                })
+                boxes.gamesForBox(3).first().observe(owner, Observer { game ->
+                    calendar_day_4.loadThumbnail(game.thumbnailUrl)
+                })
+            }
+        }
     }
 }
