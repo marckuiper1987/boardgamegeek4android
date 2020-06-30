@@ -110,6 +110,7 @@
 	<string name="before">before</string>
 	<string name="after">after</string>
 	<string name="status_of_prefix">Status of %s</string>
+	<string name="spoiler">Spoiler</string>
 	<string name="title_clear_colors">Clear Colors?</string>
 	<string name="msg_clear_colors">Do you want to clear the existing colors before assigning new ones?</string>
 	<string name="msg_color_error_no_players">There are no players that need colors.</string>
@@ -756,8 +757,8 @@
 		<item quantity="other"><b>%,d</b> comments</item>
 	</plurals>
 	<plurals name="msg_play_location_change">
-		<item quantity="one">Changed %1$s play from \"%2$s\" to \"%3$s\"</item>
-		<item quantity="other">Changed %1$s plays from \"%2$s\" to \"%3$s\"</item>
+		<item quantity="one">Changed %1$s play entry from \"%2$s\" to \"%3$s\"</item>
+		<item quantity="other">Changed %1$s play entries from \"%2$s\" to \"%3$s\"</item>
 	</plurals>
 	<plurals name="search_results">
 		<item quantity="one">%1$s match for \"%2$s\"</item>
