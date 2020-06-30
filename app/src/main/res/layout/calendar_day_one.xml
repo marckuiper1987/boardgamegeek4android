@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
-	android:id="@+id/calendar_day_1"
+	android:id="@+id/calendar_day_1_frame"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	tools:ignore="ContentDescription" />
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	app:cardCornerRadius="3dp"
+>
+	<ImageView
+		android:id="@+id/calendar_day_1"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		tools:ignore="ContentDescription"
+	/>
+</androidx.cardview.widget.CardView>

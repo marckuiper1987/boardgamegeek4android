@@ -2,14 +2,22 @@ package com.boardgamegeek.ui
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.ImageView
+import androidx.cardview.widget.CardView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.boardgamegeek.R
 import com.boardgamegeek.entities.CollectionItemEntity
 import com.boardgamegeek.extensions.loadThumbnail
+import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_1_frame
+import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_2_frame
+import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_3_frame
 import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_4
+import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_4_frame
 import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_1
 import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_2
 import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_3
@@ -34,7 +42,7 @@ class BoxedGameImages(
         else {
             while (gamesLeft > 0) {
                 for (i in boxes downTo 1) {
-                    gamesPerBox[i-1] = maxGamesPerBox.coerceAtMost(gamesLeft)
+                    gamesPerBox[i-1] = maxGamesPerBox.coerceAtMost(gamesLeft.plus(gamesPerBox[i-1] ?: 0))
                     gamesLeft -= maxGamesPerBox
                     if (gamesLeft <= 0) {
                         break
@@ -74,57 +82,72 @@ class CalendarDayView(
     attrs: AttributeSet? = null
 ): FrameLayout(context, attrs) {
 
+    var nested = false
+
+    private constructor(context: Context, nested: Boolean) : this(context) {
+        this.nested = nested
+    }
+
+    private var games: Set<LiveData<CollectionItemEntity>>? = null
+
     fun setGames(games: Set<LiveData<CollectionItemEntity>>, owner: LifecycleOwner) {
-        removeAllViews()
+
+        if (games == this.games) return
+        this.games = games
 
         val boxes = BoxedGameImages(games)
 
-        when(boxes.numberOfBoxes) {
+        removeAllViews()
+        boxes.gamesPerBox()
+            .flatMap { it.value }
+            .forEach { it.removeObservers(owner) }
+
+        fun loadThumbnail(card: CardView, view: ImageView, box: Int) {
+            boxes.gamesForBox(box).first().observe(owner, Observer { game ->
+                view.loadThumbnail(game.thumbnailUrl)
+            })
+            if (nested) {
+                card.radius = 0F
+            }
+        }
+
+        fun loadThumbnailOrBox(frame: CardView, view: ImageView, box: Int) {
+
+            val boxGames = boxes.gamesForBox(box)
+
+            if (boxGames.size > 1) {
+                frame.removeAllViews()
+                frame.addView(CalendarDayView(context, nested = true).apply {
+                    setGames(boxGames, owner)
+                })
+            }
+            else {
+                loadThumbnail(frame, view, box)
+            }
+        }
+
+        when (boxes.numberOfBoxes) {
             1 -> {
                 inflate(context, R.layout.calendar_day_one, this)
-
-                boxes.gamesForBox(0).first().observe(owner, Observer { game ->
-                    calendar_day_1.loadThumbnail(game.thumbnailUrl)
-                })
+                loadThumbnail(calendar_day_1_frame, calendar_day_1, 0)
             }
             2 -> {
                 inflate(context, R.layout.calendar_day_two, this)
-
-                boxes.gamesForBox(0).first().observe(owner, Observer { game ->
-                    calendar_day_1.loadThumbnail(game.thumbnailUrl)
-                })
-                boxes.gamesForBox(1).first().observe(owner, Observer { game ->
-                    calendar_day_2.loadThumbnail(game.thumbnailUrl)
-                })
+                loadThumbnail(calendar_day_1_frame, calendar_day_1, 0)
+                loadThumbnail(calendar_day_2_frame, calendar_day_2, 1)
             }
             3 -> {
                 inflate(context, R.layout.calendar_day_three, this)
-
-                boxes.gamesForBox(0).first().observe(owner, Observer { game ->
-                    calendar_day_1.loadThumbnail(game.thumbnailUrl)
-                })
-                boxes.gamesForBox(1).first().observe(owner, Observer { game ->
-                    calendar_day_2.loadThumbnail(game.thumbnailUrl)
-                })
-                boxes.gamesForBox(2).first().observe(owner, Observer { game ->
-                    calendar_day_3.loadThumbnail(game.thumbnailUrl)
-                })
+                loadThumbnail(calendar_day_1_frame, calendar_day_1, 0)
+                loadThumbnail(calendar_day_2_frame, calendar_day_2, 1)
+                loadThumbnail(calendar_day_3_frame, calendar_day_3, 2)
             }
             4 -> {
                 inflate(context, R.layout.calendar_day_four, this)
-
-                boxes.gamesForBox(0).first().observe(owner, Observer { game ->
-                    calendar_day_1.loadThumbnail(game.thumbnailUrl)
-                })
-                boxes.gamesForBox(1).first().observe(owner, Observer { game ->
-                    calendar_day_2.loadThumbnail(game.thumbnailUrl)
-                })
-                boxes.gamesForBox(2).first().observe(owner, Observer { game ->
-                    calendar_day_3.loadThumbnail(game.thumbnailUrl)
-                })
-                boxes.gamesForBox(3).first().observe(owner, Observer { game ->
-                    calendar_day_4.loadThumbnail(game.thumbnailUrl)
-                })
+                loadThumbnailOrBox(calendar_day_1_frame, calendar_day_1, 0)
+                loadThumbnailOrBox(calendar_day_2_frame, calendar_day_2, 1)
+                loadThumbnailOrBox(calendar_day_3_frame, calendar_day_3, 2)
+                loadThumbnailOrBox(calendar_day_4_frame, calendar_day_4, 3)
             }
         }
     }

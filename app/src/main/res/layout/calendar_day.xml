@@ -4,19 +4,24 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:orientation="vertical">
+	android:orientation="vertical"
+	android:layout_marginRight="1dp"
+	android:layout_marginEnd="1dp"
+	android:layout_marginTop="1dp"
+	android:background="@color/background">
 
 	<TextView
 		android:id="@+id/calendarDayText"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:gravity="end"
-		android:textSize="16sp"
+		android:gravity="center"
+		android:textSize="12sp"
 		tools:text="22" />
 
 	<FrameLayout
 		android:id="@+id/calendarDayFrame"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent" />
+		android:layout_height="match_parent"
+		android:padding="1dp"/>
 
 </LinearLayout>

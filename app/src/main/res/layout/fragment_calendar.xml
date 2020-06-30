@@ -16,7 +16,8 @@
 		app:cv_monthHeaderResource="@layout/calendar_header"
 		app:cv_orientation="horizontal"
 		app:cv_outDateStyle="endOfGrid"
-		app:cv_scrollMode="paged" />
+		app:cv_scrollMode="paged"
+		android:background="@color/border"/>
 
 	<androidx.recyclerview.widget.RecyclerView
 		android:id="@+id/recyclerView"

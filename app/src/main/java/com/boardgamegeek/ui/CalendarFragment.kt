@@ -99,7 +99,7 @@ class CalendarFragment(
                 }
 
                 context?.let { context ->
-                    if (day.date == LocalDate.of(2020, 6, 1)) {
+//                    if (day.date == LocalDate.of(2020, 5, 17)) {
                         viewModel.getPlaysByDay(day).observe(viewLifecycleOwner, Observer { plays ->
                             container.frame.removeAllViews()
                             container.frame.addView(
@@ -111,7 +111,7 @@ class CalendarFragment(
                                 ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                             )
                         })
-                    }
+//                    }
                 }
             }
         }

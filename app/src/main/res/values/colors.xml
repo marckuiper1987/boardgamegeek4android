@@ -22,6 +22,9 @@
 	<color name="no_image">#808080</color>
 	<color name="empty_tint">#aaaaaa</color>
 
+	<color name="border">#eeeeee</color>
+	<color name="background">#ffffff</color>
+
 	<color name="best">#00a550</color>
 	<color name="recommended">#ffef00</color>
 	<color name="no_votes">#888888</color>
