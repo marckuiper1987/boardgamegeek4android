@@ -39,7 +39,7 @@
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:textAppearance="?attr/textAppearanceListItem"
-				android:layout_gravity="end"
+				android:gravity="end"
 				android:textAlignment="viewEnd"
 				android:text="@{String.valueOf(stats.gamesPlayed) + ` games`}"
 				tools:text="123 games" />
@@ -50,7 +50,7 @@
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:textAppearance="?attr/textAppearanceListItem"
-				android:layout_gravity="end"
+				android:gravity="end"
 				android:textAlignment="viewEnd"
 				android:text="@{String.valueOf(stats.numberOfPlays) + ` plays`}"
 				tools:text="123 plays" />

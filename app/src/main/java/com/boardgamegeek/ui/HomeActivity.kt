@@ -19,7 +19,8 @@ class HomeActivity : TopLevelActivity() {
                     Authenticator.signOut(this)
                     intentFor<HotnessActivity>()
                 }
-                defaultSharedPreferences.isCollectionSetToSync() -> intentFor<CollectionActivity>()
+//                defaultSharedPreferences.isCollectionSetToSync() -> intentFor<CollectionActivity>()
+                defaultSharedPreferences.isCollectionSetToSync() -> intentFor<CalendarActivity>()
                 defaultSharedPreferences[PREFERENCES_KEY_SYNC_PLAYS, false] == true -> intentFor<PlaysSummaryActivity>()
                 defaultSharedPreferences[PREFERENCES_KEY_SYNC_BUDDIES, false] == true -> intentFor<BuddiesActivity>()
                 else -> intentFor<HotnessActivity>()

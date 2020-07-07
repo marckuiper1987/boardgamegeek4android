@@ -12,9 +12,10 @@ class CalendarActivity :
     CalendarOverviewFragment.Listener {
 
     private val overviewFragment by lazy { CalendarOverviewFragment(this) }
-    private val calendarFragment by lazy { CalendarFragment(this) }
+    private val calendarFragment by lazy { CalendarFragment().apply { listener = this@CalendarActivity } }
 
-    override fun onCreatePane(): Fragment = overviewFragment
+//    override fun onCreatePane(): Fragment = overviewFragment
+    override fun onCreatePane(): Fragment = calendarFragment
 
     override val navigationItemId: Int = R.id.calendar
 
@@ -27,5 +28,10 @@ class CalendarActivity :
     override fun onSelectMonth(yearMonth: YearMonth) {
         calendarFragment.selectedMonth = yearMonth
         replaceFragment(calendarFragment)
+        // TODO: implement back button callback
+    }
+
+    override fun onNavigateToOverview() {
+        replaceFragment(overviewFragment)
     }
 }

@@ -31,35 +31,51 @@ import org.threeten.bp.format.TextStyle
 import org.threeten.bp.temporal.WeekFields
 import java.util.Locale
 
-class CalendarFragment(
-    private val listener: Listener
-) : Fragment() {
+class CalendarFragment() : Fragment() {
 
     private val viewModel by activityViewModels<CalendarViewModel>()
     private var binding: ViewDataBinding? = null
     private var selectedDate: LocalDate? = null
 
     var selectedMonth: YearMonth = YearMonth.now()
-        set(yearMonth) {
-            field = yearMonth
-            listener.onChangeMonth(yearMonth)
+        set(value) {
+            field = value
+            listener?.onChangeMonth(value)
+
             // TODO: bind viewModel instead?
-            binding?.setVariable(BR.stats, viewModel.getStatsForMonth(yearMonth))
+            binding?.setVariable(BR.stats, viewModel.getStatsForMonth(value))
             if (calendarView != null) {
                 // TODO: data binding?
-                calendarView.scrollToMonth(yearMonth)
+                calendarView.scrollToMonth(value)
             }
+
+            selectedDate?.let {
+                // Clear selection if we scroll to a new month.
+                selectedDate = null
+                calendarView.notifyDateChanged(it)
+//                updateAdapterForDate(null)
+            }
+        }
+
+    var listener: Listener? = null
+        set(value) {
+            field = value
+            value?.onChangeMonth(selectedMonth)
         }
 
     interface Listener {
         fun onChangeMonth(yearMonth: YearMonth)
+        fun onNavigateToOverview()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View =
         DataBindingUtil
             .inflate<ViewDataBinding>(layoutInflater, R.layout.fragment_calendar, container, false)
-            .apply { lifecycleOwner = viewLifecycleOwner }
+            .apply {
+                lifecycleOwner = viewLifecycleOwner
+                setVariable(BR.listener, listener)
+            }
             .also { binding = it }
             .root
 
@@ -80,6 +96,16 @@ class CalendarFragment(
             endMonth = currentMonth.plusMonths(0),
             firstDayOfWeek = daysOfWeek.first()
         )
+
+        // TODO: make dynamic
+        calendarView.dayWidth = 1080 / 7
+        calendarView.dayHeight = (1314 - 83) / 6
+
+//        calendarView.addOnLayoutChangeListener { it: View, i: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int, i6: Int, i7: Int ->
+//            calendarView.dayWidth = it.width / 7
+//            calendarView.dayHeight = it.height / 6
+//        }
+
         calendarView.scrollToMonth(selectedMonth ?: currentMonth)
 
         class DayViewContainer(view: View) : ViewContainer(view) {
@@ -106,6 +132,7 @@ class CalendarFragment(
         calendarView.dayBinder = object : DayBinder<DayViewContainer> {
             override fun create(view: View) = DayViewContainer(view)
             override fun bind(container: DayViewContainer, day: CalendarDay) {
+
                 container.day = day
                 container.textView.text = day.date.dayOfMonth.toString()
 
@@ -156,14 +183,6 @@ class CalendarFragment(
 
         calendarView.monthScrollListener = { month ->
             selectedMonth = month.yearMonth
-            listener.onChangeMonth(month.yearMonth)
-
-            selectedDate?.let {
-                // Clear selection if we scroll to a new month.
-                selectedDate = null
-                calendarView.notifyDateChanged(it)
-//                updateAdapterForDate(null)
-            }
         }
     }
 }
