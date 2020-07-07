@@ -17,8 +17,10 @@ def versionBuild = 3
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'hugo'
 apply plugin: 'com.github.ben-manes.versions'
+
 
 repositories {
     maven { url "https://jitpack.io" }
@@ -118,6 +120,12 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
+
+    buildFeatures {
+        dataBinding {
+            enabled = true
+        }
+    }
 }
 
 dependencies {
@@ -174,7 +182,8 @@ dependencies {
     implementation "com.jakewharton:butterknife:$butterknife_version"
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
-    annotationProcessor "com.jakewharton:butterknife-compiler:$butterknife_version"
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    kapt "com.jakewharton:butterknife-compiler:$butterknife_version"
 
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
@@ -185,7 +194,7 @@ dependencies {
     }
 
     implementation 'org.greenrobot:eventbus:3.1.1'
-    annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.1.1'
+    kapt 'org.greenrobot:eventbus-annotation-processor:3.1.1'
 
     implementation 'com.github.PhilJay:MPAndroidChart:3.1.0'
 
@@ -204,6 +213,12 @@ dependencies {
     implementation 'com.github.kizitonwose:CalendarView:0.3.5'
 
     debugImplementation "com.squareup.leakcanary:leakcanary-android:2.2"
+
+    kapt "com.android.databinding:compiler:$compiler_version"
+}
+
+kapt {
+    generateStubs = true
 }
 
 apply plugin: 'com.google.gms.google-services'

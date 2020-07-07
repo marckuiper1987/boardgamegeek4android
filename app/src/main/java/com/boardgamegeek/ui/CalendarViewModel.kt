@@ -14,7 +14,9 @@ import com.boardgamegeek.repository.PlayRepository
 import com.kizitonwose.calendarview.model.CalendarDay
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDate
+import org.threeten.bp.YearMonth
 import org.threeten.bp.ZoneId
+import org.threeten.bp.temporal.ChronoUnit
 import kotlin.collections.set
 
 class CalendarViewModel(application: Application) : AndroidViewModel(application) {
@@ -24,6 +26,7 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
 
     private val playsByDay = MutableLiveData(mutableMapOf<LocalDate, List<PlayEntity>>())
     private val games = mutableMapOf<Int, MutableLiveData<CollectionItemEntity>>()
+    private var firstDate: LocalDate? = null
 
     fun initialize(lifecycleOwner: LifecycleOwner) {
 
@@ -39,7 +42,12 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
 
             plays.data
                 .groupBy { Instant.ofEpochMilli(it.dateInMillis).atZone(ZoneId.systemDefault()).toLocalDate() }
-                .forEach { playsByDay[it.key] = it.value }
+                .forEach {
+                    playsByDay[it.key] = it.value
+                    if (firstDate == null || it.key.isBefore(firstDate)) {
+                        firstDate = it.key
+                    }
+                }
 
             gameIds.addAll(plays.data.map { it.gameId })
 
@@ -72,10 +80,41 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
                 .toSet()
         }
 
-//    fun getPlayedGamesByDay(day: CalendarDay): Set<LiveData<GameEntity>> =
-//        getPlaysByDay(day)
-//            .value
-//            ?.map { games.getOrPut(it.gameId) { MutableLiveData() } }
-//            ?.toSet()
-//            ?: emptySet()
+    fun getNumberOfMonthsBetweenFirstPlayAndNow() =
+        Transformations.map(playsByDay) {
+            if (firstDate != null)
+                ChronoUnit.MONTHS.between(
+                    YearMonth.from(firstDate),
+                    YearMonth.from(LocalDate.now())
+                ).toInt()
+            else 0
+        }
+
+    fun getStatsForMonth(month: YearMonth): LiveData<PlayStatsForMonth> {
+
+        val fromDay = month.atDay(0)
+        val toDay = month.atEndOfMonth()
+
+        return Transformations.map(playsByDay) { playsByDay ->
+
+            val plays = playsByDay.flatMap { day ->
+                if (day.key.isAfter(fromDay) && day.key.isBefore(toDay))
+                    day.value
+                else
+                    emptyList()
+            }
+
+            PlayStatsForMonth(
+                plays.distinctBy { it.gameId }.count(),
+                plays.sumBy { it.quantity },
+                plays.sumBy { it.length }
+            )
+        }
+    }
 }
+
+data class PlayStatsForMonth(
+    val gamesPlayed: Int,
+    val numberOfPlays: Int,
+    val hoursPlayed: Int
+)

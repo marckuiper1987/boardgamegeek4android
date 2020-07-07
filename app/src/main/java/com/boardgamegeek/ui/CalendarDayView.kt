@@ -104,7 +104,9 @@ class CalendarDayView(
 
         fun loadThumbnail(card: CardView, view: ImageView, box: Int) {
             boxes.gamesForBox(box).first().observe(owner, Observer { game ->
-                view.loadThumbnail(game.thumbnailUrl)
+                if (game != null) {
+                    view.loadThumbnail(game.thumbnailUrl)
+                }
             })
             if (nested) {
                 card.radius = 0F
