@@ -92,7 +92,7 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
 
     fun getStatsForMonth(month: YearMonth): LiveData<PlayStatsForMonth> {
 
-        val fromDay = month.atDay(0)
+        val fromDay = month.atDay(1)
         val toDay = month.atEndOfMonth()
 
         return Transformations.map(playsByDay) { playsByDay ->

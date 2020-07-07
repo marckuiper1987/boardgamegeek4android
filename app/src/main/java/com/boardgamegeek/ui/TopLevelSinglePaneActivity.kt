@@ -42,7 +42,14 @@ abstract class TopLevelSinglePaneActivity : TopLevelActivity() {
 
     private fun createFragment() {
         fragment = onCreatePane()
-        supportFragmentManager.beginTransaction().add(R.id.root_container, fragment!!, TAG_SINGLE_PANE).commit()
+        replaceFragment(fragment!!)
+    }
+
+    protected fun replaceFragment(fragment: Fragment) {
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.root_container, fragment, TAG_SINGLE_PANE)
+            .commit()
     }
 
     companion object {

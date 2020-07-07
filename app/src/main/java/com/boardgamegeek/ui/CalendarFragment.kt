@@ -7,9 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.children
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import com.boardgamegeek.BR
 import com.boardgamegeek.R
 import com.kizitonwose.calendarview.model.CalendarDay
 import com.kizitonwose.calendarview.model.CalendarMonth
@@ -21,7 +24,6 @@ import kotlinx.android.synthetic.main.calendar_day.view.calendarDayFrame
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDayText
 import kotlinx.android.synthetic.main.calendar_header.view.legendLayout
 import kotlinx.android.synthetic.main.fragment_calendar.calendarView
-import org.jetbrains.anko.firstChildOrNull
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
@@ -34,16 +36,32 @@ class CalendarFragment(
 ) : Fragment() {
 
     private val viewModel by activityViewModels<CalendarViewModel>()
+    private var binding: ViewDataBinding? = null
     private var selectedDate: LocalDate? = null
 
+    var selectedMonth: YearMonth = YearMonth.now()
+        set(yearMonth) {
+            field = yearMonth
+            listener.onChangeMonth(yearMonth)
+            // TODO: bind viewModel instead?
+            binding?.setVariable(BR.stats, viewModel.getStatsForMonth(yearMonth))
+            if (calendarView != null) {
+                // TODO: data binding?
+                calendarView.scrollToMonth(yearMonth)
+            }
+        }
+
     interface Listener {
-        fun onChangeMonth(month: CalendarMonth)
+        fun onChangeMonth(yearMonth: YearMonth)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.fragment_calendar, container, false)
-    }
+                              savedInstanceState: Bundle?): View =
+        DataBindingUtil
+            .inflate<ViewDataBinding>(layoutInflater, R.layout.fragment_calendar, container, false)
+            .apply { lifecycleOwner = viewLifecycleOwner }
+            .also { binding = it }
+            .root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,11 +76,11 @@ class CalendarFragment(
 
         val currentMonth = YearMonth.now()
         calendarView.setup(
-            startMonth = currentMonth.minusMonths(10),
-            endMonth = currentMonth.plusMonths(10),
+            startMonth = currentMonth.minusMonths(10), //  TODO
+            endMonth = currentMonth.plusMonths(0),
             firstDayOfWeek = daysOfWeek.first()
         )
-        calendarView.scrollToMonth(currentMonth)
+        calendarView.scrollToMonth(selectedMonth ?: currentMonth)
 
         class DayViewContainer(view: View) : ViewContainer(view) {
             lateinit var day: CalendarDay
@@ -137,7 +155,8 @@ class CalendarFragment(
         }
 
         calendarView.monthScrollListener = { month ->
-            listener.onChangeMonth(month)
+            selectedMonth = month.yearMonth
+            listener.onChangeMonth(month.yearMonth)
 
             selectedDate?.let {
                 // Clear selection if we scroll to a new month.
