@@ -6,7 +6,7 @@
 
 	<data>
 		<variable name="stats" type="androidx.lifecycle.LiveData&lt;com.boardgamegeek.ui.PlayStatsForMonth&gt;" />
-		<variable name="listener" type="com.boardgamegeek.ui.CalendarFragment.Listener" />
+		<variable name="listener" type="com.boardgamegeek.ui.CalendarViewListener" />
 	</data>
 
 	<FrameLayout

@@ -12,6 +12,7 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.databinding.DataBindingUtil
@@ -46,24 +47,78 @@ import org.threeten.bp.format.TextStyle
 import org.threeten.bp.temporal.WeekFields
 import java.util.Locale
 
-class CalendarFragment : Fragment(), HistoryListAdapter.Listener, DayViewContainer.Listener {
+interface CalendarViewListener {
+    fun onNavigateToOverview()
+}
+
+class CalendarFragment :
+    Fragment(),
+    CalendarViewListener,
+    HistoryListAdapter.Listener,
+    DayViewContainer.Listener {
 
     private val viewModel by activityViewModels<CalendarViewModel>()
     private var binding: ViewDataBinding? = null
     private var selectedDate: LocalDate? = null
 
-    private var animationDuration: Int = 0
+    private lateinit var animator: CalendarFragmentAnimator
 
-    var selectedMonth: YearMonth = YearMonth.now()
-        set(value) {
-            field = value
-            listener?.onChangeMonth(value)
+    // ----------------------------
+    // Fragment events
+    // ----------------------------
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        requireActivity()
+            .onBackPressedDispatcher
+            .addCallback(this, backPressedCallback)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View =
+        DataBindingUtil
+            .inflate<ViewDataBinding>(layoutInflater, R.layout.fragment_calendar, container, false)
+            .apply {
+                lifecycleOwner = this@CalendarFragment
+                setVariable(BR.listener, this@CalendarFragment)
+            }
+            .also { binding = it }
+            .root
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel.initialize(this)
+
+        animator = CalendarFragmentAnimator(
+            overviewList = calendar_history_list,
+            calendarLayout = calendar_fragment,
+            calendarView = calendarView,
+            animationDuration = resources.getInteger(android.R.integer.config_mediumAnimTime)
+        )
+
+        setupHistoryList()
+        setupCalendar()
+        setupPlaysList()
+    }
+
+    // ----------------------------
+    // View events
+    // ----------------------------
+
+    private var selectedMonth: YearMonth? = null
+        set(yearMonth) {
+            field = yearMonth
+            listener?.onChangeMonth(yearMonth)
 
             // TODO: bind viewModel instead?
-            binding?.setVariable(BR.stats, viewModel.getStatsForMonth(value))
-            if (calendarView != null) {
-                // TODO: data binding?
-                calendarView.scrollToMonth(value)
+            if (yearMonth != null) {
+                binding?.setVariable(BR.stats, viewModel.getStatsForMonth(yearMonth))
+                if (calendarView != null) {
+                    // TODO: data binding?
+                    calendarView.scrollToMonth(yearMonth)
+                }
             }
 
             selectedDate?.let {
@@ -73,41 +128,6 @@ class CalendarFragment : Fragment(), HistoryListAdapter.Listener, DayViewContain
 //                updateAdapterForDate(null)
             }
         }
-
-    var listener: Listener? = null
-        set(value) {
-            field = value
-            value?.onChangeMonth(selectedMonth)
-        }
-
-    interface Listener {
-        fun onChangeMonth(yearMonth: YearMonth)
-        fun onNavigateToOverview()
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
-
-        animationDuration = resources.getInteger(android.R.integer.config_mediumAnimTime)
-
-        return DataBindingUtil
-            .inflate<ViewDataBinding>(layoutInflater, R.layout.fragment_calendar, container, false)
-            .apply {
-                lifecycleOwner = viewLifecycleOwner
-//                setVariable(BR.listener, listener)
-
-                setVariable(BR.listener, object : Listener {
-                    override fun onChangeMonth(yearMonth: YearMonth) {
-                        TODO("Not yet implemented")
-                    }
-                    override fun onNavigateToOverview() {
-                        crossfade(calendar_fragment, calendar_history_list, false)
-                    }
-                })
-            }
-            .also { binding = it }
-            .root
-    }
 
     override fun onSelectDate(date: LocalDate) {
         if (selectedDate != date) {
@@ -119,81 +139,27 @@ class CalendarFragment : Fragment(), HistoryListAdapter.Listener, DayViewContain
         }
     }
 
-    private val monthsLoaded = mutableSetOf<YearMonth>()
-
-    override fun onSelectMonth(yearMonth: YearMonth) {
+    override fun onNavigateToMonth(yearMonth: YearMonth) {
+        backPressedCallback.isEnabled = true
         selectedMonth = yearMonth
-        crossfade(calendar_history_list, calendar_fragment, true, yearMonth)
+        animator.navigateToCalendar(yearMonth)
     }
 
-    private fun crossfade(fromView: View, toView: View, up: Boolean, yearMonth: YearMonth? = null) {
+    override fun onNavigateToOverview() {
+        backPressedCallback.isEnabled = false
+        selectedMonth = null
+        animator.navigateToOverview()
+    }
 
-        val scaleBy = if (up) .3f else -.3f
-
-        toView.apply {
-            // Set the content view to 0% opacity but visible, so that it is visible
-            // (but fully transparent) during the animation.
-            alpha = 0f
-            visibility = View.VISIBLE
-
-            scaleX = 1 - scaleBy
-            scaleY = 1 - scaleBy
-
-            if (yearMonth != null && monthsLoaded.contains(yearMonth)) {
-                calendarView.visibility = View.VISIBLE
-            }
-
-            // Animate the content view to 100% opacity, and clear any animation
-            // listener set on the view.
-            animate()
-                .alpha(1f)
-                .scaleXBy(scaleBy)
-                .scaleYBy(scaleBy)
-                .setDuration(animationDuration.toLong())
-                .setInterpolator(AccelerateDecelerateInterpolator())
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        if (up) {
-                            calendarView.visibility = View.VISIBLE
-                            if (yearMonth != null) {
-                                monthsLoaded.add(yearMonth)
-                            }
-                        }
-                    }
-                })
+    private val backPressedCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            onNavigateToOverview()
         }
-
-        // Animate the loading view to 0% opacity. After the animation ends,
-        // set its visibility to GONE as an optimization step (it won't
-        // participate in layout passes, etc.)
-        fromView.animate()
-            .alpha(0f)
-            .scaleXBy(scaleBy)
-            .scaleYBy(scaleBy)
-            .setDuration(animationDuration.toLong())
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    fromView.visibility = View.GONE
-                    if (!up) {
-                        calendarView.visibility = View.GONE
-                    }
-                }
-            })
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        viewModel.initialize(viewLifecycleOwner)
-
-        calendar_fragment.visibility = View.GONE
-        calendarView.visibility = View.GONE
-
-        setupHistoryList()
-        setupCalendar()
-        setupPlaysList()
-    }
+    // ----------------------------
+    // Setup
+    // ----------------------------
 
     private fun setupHistoryList() {
         with(calendar_history_list) {
@@ -213,7 +179,7 @@ class CalendarFragment : Fragment(), HistoryListAdapter.Listener, DayViewContain
             firstDayOfWeek = daysOfWeek.first()
         )
 
-        calendarView.scrollToMonth(selectedMonth)
+        calendarView.scrollToMonth(selectedMonth ?: currentMonth)
 
         setCalendarDayDimensions()
 
@@ -224,7 +190,7 @@ class CalendarFragment : Fragment(), HistoryListAdapter.Listener, DayViewContain
 
         calendarView.monthScrollListener = { month ->
             selectedMonth = month.yearMonth
-            monthsLoaded.add(month.yearMonth)
+            animator.markMonthLoaded(month.yearMonth)
         }
     }
 
@@ -244,6 +210,101 @@ class CalendarFragment : Fragment(), HistoryListAdapter.Listener, DayViewContain
 //
 //        }
     }
+
+    // ----------------------------
+    // Listener
+    // ----------------------------
+
+    var listener: Listener? = null
+        set(value) {
+            field = value
+            value?.onChangeMonth(selectedMonth)
+        }
+
+    interface Listener {
+        fun onChangeMonth(yearMonth: YearMonth?)
+    }
+}
+
+class CalendarFragmentAnimator(
+    private val overviewList: View,
+    private val calendarLayout: View,
+    private val calendarView: View,
+    private val animationDuration: Int
+) {
+    private val monthsLoaded = mutableSetOf<YearMonth>()
+
+    init {
+        calendarLayout.visibility = View.GONE
+        calendarView.visibility = View.GONE
+    }
+
+    fun navigateToOverview() {
+        fadeIn(overviewList, towardScreen = false, yearMonth = null)
+        fadeOut(calendarLayout, towardScreen = false)
+    }
+
+    fun navigateToCalendar(yearMonth: YearMonth) {
+        fadeIn(calendarLayout, towardScreen = true, yearMonth = yearMonth)
+        fadeOut(overviewList, towardScreen = true)
+    }
+
+    fun markMonthLoaded(yearMonth: YearMonth) {
+        monthsLoaded.add(yearMonth)
+    }
+
+    private fun scaleBy(towardScreen: Boolean) =
+        if (towardScreen) .3f else -.3f
+
+    private fun fadeIn(view: View, towardScreen: Boolean, yearMonth: YearMonth?) {
+        val scaleBy = scaleBy(towardScreen)
+        view.apply {
+            alpha = 0f
+            visibility = View.VISIBLE
+
+            scaleX = 1 - scaleBy
+            scaleY = 1 - scaleBy
+
+            if (yearMonth != null && monthsLoaded.contains(yearMonth)) {
+                calendarView.visibility = View.VISIBLE
+            }
+
+            animate()
+                .alpha(1f)
+                .scaleXBy(scaleBy)
+                .scaleYBy(scaleBy)
+                .setDuration(animationDuration.toLong())
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        if (towardScreen) {
+                            calendarView.visibility = View.VISIBLE
+                            if (yearMonth != null) {
+                                monthsLoaded.add(yearMonth)
+                            }
+                        }
+                    }
+                })
+        }
+    }
+
+    private fun fadeOut(view: View, towardScreen: Boolean) {
+        val scaleBy = scaleBy(towardScreen)
+        view.animate()
+            .alpha(0f)
+            .scaleXBy(scaleBy)
+            .scaleYBy(scaleBy)
+            .setDuration(animationDuration.toLong())
+            .setInterpolator(AccelerateDecelerateInterpolator())
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    view.visibility = View.GONE
+                    if (!towardScreen) {
+                        calendarView.visibility = View.GONE
+                    }
+                }
+            })
+    }
 }
 
 class HistoryListAdapter(
@@ -253,7 +314,7 @@ class HistoryListAdapter(
 ) : RecyclerView.Adapter<HistoryListAdapter.ViewHolder>() {
 
     interface Listener {
-        fun onSelectMonth(yearMonth: YearMonth)
+        fun onNavigateToMonth(yearMonth: YearMonth)
     }
 
     private var monthCount = 0
