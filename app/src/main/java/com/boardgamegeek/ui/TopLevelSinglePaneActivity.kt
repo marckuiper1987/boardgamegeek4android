@@ -49,6 +49,8 @@ abstract class TopLevelSinglePaneActivity : TopLevelActivity() {
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.root_container, fragment, TAG_SINGLE_PANE)
+            .setReorderingAllowed(true)
+            .addToBackStack(null)
             .commit()
     }
 

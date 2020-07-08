@@ -9,66 +9,92 @@
 		<variable name="listener" type="com.boardgamegeek.ui.CalendarFragment.Listener" />
 	</data>
 
-	<LinearLayout
-		android:id="@+id/calendar_fragment"
-		android:orientation="vertical"
+	<FrameLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		tools:context=".ui.CalendarFragment"
 		android:background="@color/background">
 
-		<com.kizitonwose.calendarview.CalendarView
-			android:id="@+id/calendarView"
-			android:layout_width="match_parent"
-			android:layout_height="0dp"
-			android:layout_weight="3"
-			app:cv_dayViewResource="@layout/calendar_day"
-			app:cv_monthHeaderResource="@layout/calendar_header"
-			app:cv_orientation="horizontal"
-			app:cv_outDateStyle="endOfGrid"
-			app:cv_scrollMode="paged"
-			android:background="@color/border"
-			tools:ignore="NestedWeights" />
-
 		<androidx.recyclerview.widget.RecyclerView
-			android:id="@+id/recyclerView"
+			android:id="@+id/calendar_history_list"
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"/>
-		<!--	android:nestedScrollingEnabled="false"-->
+			android:layout_height="match_parent"
+			app:layoutManager="LinearLayoutManager"
+			tools:context=".ui.CalendarOverviewFragment"
+			tools:listitem="@layout/fragment_calendar_overview_item" />
 
 		<LinearLayout
+			android:id="@+id/calendar_fragment"
+			android:orientation="vertical"
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:background="@color/border"
-			android:onClick="@{() -> listener.onNavigateToOverview()}">
+			android:layout_height="match_parent"
+			tools:context=".ui.CalendarFragment">
 
-			<TextView
-				android:id="@+id/item_number"
-				android:layout_width="0dp"
+			<FrameLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+
+				<FrameLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:background="@color/border"
+					android:paddingTop="7dp"
+					android:paddingBottom="7dp">
+					<include layout="@layout/calendar_header" />
+				</FrameLayout>
+
+				<com.kizitonwose.calendarview.CalendarView
+					android:id="@+id/calendarView"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					app:cv_dayViewResource="@layout/calendar_day"
+					app:cv_monthHeaderResource="@layout/calendar_header"
+					app:cv_orientation="horizontal"
+					app:cv_outDateStyle="endOfGrid"
+					app:cv_scrollMode="paged"
+					android:background="@color/border"
+					tools:ignore="NestedWeights" />
+			</FrameLayout>
+
+			<androidx.recyclerview.widget.RecyclerView
+				android:id="@+id/recyclerView"
+				android:layout_width="match_parent"
+				android:layout_height="0dp"
+				android:layout_weight="1" />
+			<!--	android:nestedScrollingEnabled="false"-->
+
+			<LinearLayout
+				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:layout_margin="10dp"
-				android:textAppearance="?attr/textAppearanceListItem"
-				android:gravity="center"
-				android:textAlignment="center"
-				android:text="@{String.valueOf(stats.gamesPlayed) + ` games`}"
-				tools:text="123 games"
-				tools:ignore="NestedWeights" />
+				android:background="@color/border"
+				android:onClick="@{() -> listener.onNavigateToOverview()}">
 
-			<TextView
-				android:id="@+id/content"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:layout_margin="10dp"
-				android:textAppearance="?attr/textAppearanceListItem"
-				android:gravity="center"
-				android:textAlignment="center"
-				android:text="@{String.valueOf(stats.numberOfPlays) + ` plays`}"
-				tools:text="123 plays" />
+				<TextView
+					android:id="@+id/item_number"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_margin="10dp"
+					android:textAppearance="?attr/textAppearanceListItem"
+					android:gravity="center"
+					android:textAlignment="center"
+					android:text="@{String.valueOf(stats.gamesPlayed) + ` games`}"
+					tools:text="123 games"
+					tools:ignore="NestedWeights" />
 
+				<TextView
+					android:id="@+id/content"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_margin="10dp"
+					android:textAppearance="?attr/textAppearanceListItem"
+					android:gravity="center"
+					android:textAlignment="center"
+					android:text="@{String.valueOf(stats.numberOfPlays) + ` plays`}"
+					tools:text="123 plays" />
+
+			</LinearLayout>
 		</LinearLayout>
 
-	</LinearLayout>
+	</FrameLayout>
 </layout>

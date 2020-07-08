@@ -7,7 +7,7 @@
 		<variable name="yearMonth" type="org.threeten.bp.YearMonth" />
 		<variable name="monthString" type="String" />
 		<variable name="stats" type="androidx.lifecycle.LiveData&lt;com.boardgamegeek.ui.PlayStatsForMonth&gt;" />
-		<variable name="listener" type="com.boardgamegeek.ui.CalendarOverviewFragment.Listener" />
+		<variable name="listener" type="com.boardgamegeek.ui.HistoryListAdapter.Listener" />
 	</data>
 
 	<com.google.android.material.card.MaterialCardView
