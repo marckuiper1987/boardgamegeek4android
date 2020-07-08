@@ -19,6 +19,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -26,6 +27,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.boardgamegeek.BR
 import com.boardgamegeek.R
+import com.boardgamegeek.ui.viewmodel.HistoryViewModel
+import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
+import com.boardgamegeek.ui.viewmodel.PlayStatsForMonth
 import com.karumi.weak.weak
 import com.kizitonwose.calendarview.model.CalendarDay
 import com.kizitonwose.calendarview.model.CalendarMonth
@@ -36,9 +40,9 @@ import com.kizitonwose.calendarview.ui.ViewContainer
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDayFrame
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDayText
 import kotlinx.android.synthetic.main.calendar_header.view.legendLayout
-import kotlinx.android.synthetic.main.fragment_calendar.calendarView
-import kotlinx.android.synthetic.main.fragment_calendar.calendar_fragment
-import kotlinx.android.synthetic.main.fragment_calendar.calendar_history_list
+import kotlinx.android.synthetic.main.fragment_history.history_calendar
+import kotlinx.android.synthetic.main.fragment_history.history_detail
+import kotlinx.android.synthetic.main.fragment_history.history_summary_list
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
@@ -57,11 +61,16 @@ class CalendarFragment :
     HistoryListAdapter.Listener,
     DayViewContainer.Listener {
 
-    private val viewModel by activityViewModels<CalendarViewModel>()
+//    private val viewModel by activityViewModels<HistoryViewModel>(HistoryViewModelFactory(application = requireActivity().application))
+
+    private val viewModel by activityViewModels<HistoryViewModel> {
+        HistoryViewModelFactory(requireActivity().application, viewLifecycleOwner)
+    }
+
     private var binding: ViewDataBinding? = null
     private var selectedDate: LocalDate? = null
 
-    private lateinit var animator: CalendarFragmentAnimator
+    private lateinit var navigator: HistoryFragmentNavigator
 
     // ----------------------------
     // Fragment events
@@ -78,23 +87,21 @@ class CalendarFragment :
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View =
         DataBindingUtil
-            .inflate<ViewDataBinding>(layoutInflater, R.layout.fragment_calendar, container, false)
-            .apply {
-                lifecycleOwner = this@CalendarFragment
-                setVariable(BR.listener, this@CalendarFragment)
+            .inflate<ViewDataBinding>(layoutInflater, R.layout.fragment_history, container, false)
+            .also {
+                it.lifecycleOwner = this
+                it.setVariable(BR.listener, this)
+                binding = it
             }
-            .also { binding = it }
             .root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.initialize(this)
-
-        animator = CalendarFragmentAnimator(
-            overviewList = calendar_history_list,
-            calendarLayout = calendar_fragment,
-            calendarView = calendarView,
+        navigator = HistoryFragmentNavigator(
+            summaryList = history_summary_list,
+            detail = history_detail,
+            calendar = history_calendar,
             animationDuration = resources.getInteger(android.R.integer.config_mediumAnimTime)
         )
 
@@ -110,21 +117,25 @@ class CalendarFragment :
     private var selectedMonth: YearMonth? = null
         set(yearMonth) {
             field = yearMonth
+
+            viewModel.selectedMonth = yearMonth
+
             listener?.onChangeMonth(yearMonth)
+
+            binding?.setVariable(BR.viewModel, viewModel)
 
             // TODO: bind viewModel instead?
             if (yearMonth != null) {
-                binding?.setVariable(BR.stats, viewModel.getStatsForMonth(yearMonth))
-                if (calendarView != null) {
-                    // TODO: data binding?
-                    calendarView.scrollToMonth(yearMonth)
+//                binding?.setVariable(BR.stats, viewModel.getStatsForMonth(yearMonth))
+                if (history_calendar != null) {
+                    history_calendar.scrollToMonth(yearMonth)
                 }
             }
 
             selectedDate?.let {
                 // Clear selection if we scroll to a new month.
                 selectedDate = null
-                calendarView.notifyDateChanged(it)
+                history_calendar.notifyDateChanged(it)
 //                updateAdapterForDate(null)
             }
         }
@@ -133,8 +144,8 @@ class CalendarFragment :
         if (selectedDate != date) {
             val oldDate = selectedDate
             selectedDate = date
-            calendarView.notifyDateChanged(date)
-            oldDate?.let { calendarView.notifyDateChanged(it) }
+            history_calendar.notifyDateChanged(date)
+            oldDate?.let { history_calendar.notifyDateChanged(it) }
             //updateAdapterForDate(day.date)
         }
     }
@@ -142,13 +153,13 @@ class CalendarFragment :
     override fun onNavigateToMonth(yearMonth: YearMonth) {
         backPressedCallback.isEnabled = true
         selectedMonth = yearMonth
-        animator.navigateToCalendar(yearMonth)
+        navigator.navigateToCalendar(yearMonth)
     }
 
     override fun onNavigateToOverview() {
         backPressedCallback.isEnabled = false
         selectedMonth = null
-        animator.navigateToOverview()
+        navigator.navigateToOverview()
     }
 
     private val backPressedCallback = object : OnBackPressedCallback(false) {
@@ -162,9 +173,9 @@ class CalendarFragment :
     // ----------------------------
 
     private fun setupHistoryList() {
-        with(calendar_history_list) {
-            layoutManager = LinearLayoutManager(this@CalendarFragment.context)
-            adapter = HistoryListAdapter(viewModel, viewLifecycleOwner, this@CalendarFragment)
+        history_summary_list.also {
+            it.layoutManager = LinearLayoutManager(this.context)
+            it.adapter = HistoryListAdapter(viewModel, viewLifecycleOwner, this)
         }
     }
 
@@ -173,24 +184,24 @@ class CalendarFragment :
         val daysOfWeek = daysOfWeekFromLocale()
         val currentMonth = YearMonth.now()
 
-        calendarView.setup(
+        history_calendar.setup(
             startMonth = currentMonth.minusMonths(10), //  TODO
             endMonth = currentMonth.plusMonths(0),
             firstDayOfWeek = daysOfWeek.first()
         )
 
-        calendarView.scrollToMonth(selectedMonth ?: currentMonth)
+        history_calendar.scrollToMonth(selectedMonth ?: currentMonth)
 
         setCalendarDayDimensions()
 
         context?.also { context ->
-            calendarView.dayBinder = CalendarDayBinder(context, viewLifecycleOwner, viewModel, this)
-            calendarView.monthHeaderBinder = CalendarMonthHeaderBinder(daysOfWeek)
+            history_calendar.dayBinder = CalendarDayBinder(context, viewLifecycleOwner, viewModel, this)
+            history_calendar.monthHeaderBinder = CalendarMonthHeaderBinder(daysOfWeek)
         }
 
-        calendarView.monthScrollListener = { month ->
+        history_calendar.monthScrollListener = { month ->
             selectedMonth = month.yearMonth
-            animator.markMonthLoaded(month.yearMonth)
+            navigator.markMonthLoaded(month.yearMonth)
         }
     }
 
@@ -200,8 +211,8 @@ class CalendarFragment :
         activity?.windowManager?.defaultDisplay?.getMetrics(displayMetrics)
 
         (displayMetrics.widthPixels / 7).let {
-            calendarView.dayWidth = it
-            calendarView.dayHeight = it + 20
+            history_calendar.dayWidth = it
+            history_calendar.dayHeight = it + 20
         }
     }
 
@@ -226,27 +237,27 @@ class CalendarFragment :
     }
 }
 
-class CalendarFragmentAnimator(
-    private val overviewList: View,
-    private val calendarLayout: View,
-    private val calendarView: View,
+class HistoryFragmentNavigator(
+    private val summaryList: View,
+    private val detail: View,
+    private val calendar: View,
     private val animationDuration: Int
 ) {
     private val monthsLoaded = mutableSetOf<YearMonth>()
 
     init {
-        calendarLayout.visibility = View.GONE
-        calendarView.visibility = View.GONE
+        detail.visibility = View.GONE
+        calendar.visibility = View.GONE
     }
 
     fun navigateToOverview() {
-        fadeIn(overviewList, towardScreen = false, yearMonth = null)
-        fadeOut(calendarLayout, towardScreen = false)
+        fadeIn(summaryList, towardScreen = false, yearMonth = null)
+        fadeOut(detail, towardScreen = false)
     }
 
     fun navigateToCalendar(yearMonth: YearMonth) {
-        fadeIn(calendarLayout, towardScreen = true, yearMonth = yearMonth)
-        fadeOut(overviewList, towardScreen = true)
+        fadeIn(detail, towardScreen = true, yearMonth = yearMonth)
+        fadeOut(summaryList, towardScreen = true)
     }
 
     fun markMonthLoaded(yearMonth: YearMonth) {
@@ -266,7 +277,7 @@ class CalendarFragmentAnimator(
             scaleY = 1 - scaleBy
 
             if (yearMonth != null && monthsLoaded.contains(yearMonth)) {
-                calendarView.visibility = View.VISIBLE
+                calendar.visibility = View.VISIBLE
             }
 
             animate()
@@ -278,7 +289,7 @@ class CalendarFragmentAnimator(
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         if (towardScreen) {
-                            calendarView.visibility = View.VISIBLE
+                            calendar.visibility = View.VISIBLE
                             if (yearMonth != null) {
                                 monthsLoaded.add(yearMonth)
                             }
@@ -300,7 +311,7 @@ class CalendarFragmentAnimator(
                 override fun onAnimationEnd(animation: Animator) {
                     view.visibility = View.GONE
                     if (!towardScreen) {
-                        calendarView.visibility = View.GONE
+                        calendar.visibility = View.GONE
                     }
                 }
             })
@@ -308,7 +319,7 @@ class CalendarFragmentAnimator(
 }
 
 class HistoryListAdapter(
-    private val viewModel: CalendarViewModel,
+    private val viewModel: HistoryViewModel,
     private val viewLifecycleOwner: LifecycleOwner,
     private val listener: Listener?
 ) : RecyclerView.Adapter<HistoryListAdapter.ViewHolder>() {
@@ -382,7 +393,7 @@ class DayViewContainer(view: View, listener: Listener?) : ViewContainer(view) {
 class CalendarDayBinder(
     context: Context,
     viewLifecycleOwner: LifecycleOwner,
-    viewModel: CalendarViewModel,
+    viewModel: HistoryViewModel,
     listener: DayViewContainer.Listener
 ): DayBinder<DayViewContainer> {
 

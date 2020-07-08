@@ -5,11 +5,11 @@ import com.boardgamegeek.R
 import org.threeten.bp.YearMonth
 import org.threeten.bp.format.DateTimeFormatter
 
-class CalendarActivity : TopLevelSinglePaneActivity(), CalendarFragment.Listener {
+class HistoryActivity : TopLevelSinglePaneActivity(), CalendarFragment.Listener {
 
-    override fun onCreatePane(): Fragment = CalendarFragment().apply { listener = this@CalendarActivity }
+    override fun onCreatePane(): Fragment = CalendarFragment().also { it.listener = this }
 
-    override val navigationItemId: Int = R.id.calendar
+    override val navigationItemId: Int = R.id.history
 
     private val monthTitleFormatter = DateTimeFormatter.ofPattern("MMMM")
 
@@ -18,6 +18,6 @@ class CalendarActivity : TopLevelSinglePaneActivity(), CalendarFragment.Listener
             if (yearMonth != null)
                 "${monthTitleFormatter.format(yearMonth)} ${yearMonth.year}"
             else
-                "Calendar"
+                resources.getString(R.string.title_history)
     }
 }
