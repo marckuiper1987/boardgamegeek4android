@@ -19,7 +19,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -61,8 +60,6 @@ class CalendarFragment :
     HistoryListAdapter.Listener,
     DayViewContainer.Listener {
 
-//    private val viewModel by activityViewModels<HistoryViewModel>(HistoryViewModelFactory(application = requireActivity().application))
-
     private val viewModel by activityViewModels<HistoryViewModel> {
         HistoryViewModelFactory(requireActivity().application, viewLifecycleOwner)
     }
@@ -90,6 +87,7 @@ class CalendarFragment :
             .inflate<ViewDataBinding>(layoutInflater, R.layout.fragment_history, container, false)
             .also {
                 it.lifecycleOwner = this
+                it.setVariable(BR.viewModel, viewModel)
                 it.setVariable(BR.listener, this)
                 binding = it
             }
@@ -118,18 +116,12 @@ class CalendarFragment :
         set(yearMonth) {
             field = yearMonth
 
-            viewModel.selectedMonth = yearMonth
+            viewModel.selectedMonth.value = yearMonth
 
             listener?.onChangeMonth(yearMonth)
 
-            binding?.setVariable(BR.viewModel, viewModel)
-
-            // TODO: bind viewModel instead?
             if (yearMonth != null) {
-//                binding?.setVariable(BR.stats, viewModel.getStatsForMonth(yearMonth))
-                if (history_calendar != null) {
-                    history_calendar.scrollToMonth(yearMonth)
-                }
+                history_calendar?.scrollToMonth(yearMonth)
             }
 
             selectedDate?.let {
@@ -412,27 +404,22 @@ class CalendarDayBinder(
         val viewLifecycleOwner = viewLifecycleOwner ?: return
         val viewModel = viewModel ?: return
 
-        // TODO: data binding
-        if (day.owner == DayOwner.THIS_MONTH) {
-            container.textView.setTextColor(ContextCompat.getColor(context, R.color.primary_text))
-        }
-        else {
-            container.textView.setTextColor(ContextCompat.getColor(context, R.color.primary_dark))
-        }
+        container.textView.setTextColor(ContextCompat.getColor(context,
+            if (day.owner == DayOwner.THIS_MONTH)
+                R.color.primary_text
+            else
+                R.color.border
+        ))
 
-//        if (day.date == LocalDate.of(2020, 5, 17)) {
-            viewModel.getPlaysByDay(day).observe(viewLifecycleOwner, Observer { plays ->
-                container.frame.removeAllViews()
-                container.frame.addView(
-                    CalendarDayView(context).apply {
-                        viewModel.getGamesFromPlays(plays).observe(viewLifecycleOwner, Observer { games ->
-                            setGames(games, viewLifecycleOwner)
-                        })
-                    },
-                    ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                )
-            })
-//        }
+        viewModel.getGamesForDay(day.date).observe(viewLifecycleOwner, Observer { games ->
+            container.frame.removeAllViews()
+            container.frame.addView(
+                CalendarDayView(context).apply {
+                    setGames(games, viewLifecycleOwner)
+                },
+                ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            )
+        })
     }
 }
 

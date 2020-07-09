@@ -82,7 +82,7 @@ class CalendarDayView(
     attrs: AttributeSet? = null
 ): FrameLayout(context, attrs) {
 
-    var nested = false
+    private var nested = false
 
     private constructor(context: Context, nested: Boolean) : this(context) {
         this.nested = nested

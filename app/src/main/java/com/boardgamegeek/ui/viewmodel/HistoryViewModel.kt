@@ -13,13 +13,11 @@ import com.boardgamegeek.entities.CollectionItemEntity
 import com.boardgamegeek.entities.PlayEntity
 import com.boardgamegeek.repository.GameCollectionRepository
 import com.boardgamegeek.repository.PlayRepository
-import com.kizitonwose.calendarview.model.CalendarDay
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
 import org.threeten.bp.ZoneId
 import org.threeten.bp.temporal.ChronoUnit
-import kotlin.collections.set
 
 class HistoryViewModelFactory(
     private val application: Application,
@@ -39,51 +37,36 @@ class HistoryViewModel(
     private val playRepository = PlayRepository(getApplication())
     private val gameCollectionRepository = GameCollectionRepository(getApplication())
 
-    private val playsByDay = MutableLiveData(mutableMapOf<LocalDate, List<PlayEntity>>())
+    private val playsByMonth = mutableMapOf<YearMonth, MutableLiveData<List<PlayEntity>>>()
+    private var firstMonth = MutableLiveData<YearMonth?>()
+
     private val games = mutableMapOf<Int, MutableLiveData<CollectionItemEntity>>()
-    private var firstDate: LocalDate? = null
 
-    var selectedMonth: YearMonth? = null
-        set(yearMonth) {
-            field = yearMonth
-
-            if (yearMonth != null) {
-
-                // FIXME: bleh
-                getStatsForMonth(yearMonth).observe(lifecycleOwner, Observer {
-                    selectedMonthStats.value = it
-                })
-            }
-
-//            selectedMonthStats = if (yearMonth != null) getStatsForMonth(yearMonth) else null
-        }
-
-    var selectedMonthStats = MutableLiveData<PlayStatsForMonth>()
+    val selectedMonth = MutableLiveData<YearMonth?>()
+    val selectedMonthStats = Transformations.map(selectedMonth) { it?.let { getStatsForMonth(it) } }
 
     init {
 
-        val playsByDay = mutableMapOf<LocalDate, List<PlayEntity>>()
         val gameIds = mutableSetOf<Int>()
 
         playRepository.getPlays().observe(lifecycleOwner, Observer { plays ->
 
             if (plays.data == null) {
-                this.playsByDay.value = mutableMapOf()
                 return@Observer
             }
 
             plays.data
-                .groupBy { Instant.ofEpochMilli(it.dateInMillis).atZone(ZoneId.systemDefault()).toLocalDate() }
+                .groupBy {
+                    val date = Instant.ofEpochMilli(it.dateInMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+                    YearMonth.from(date)
+                }
                 .forEach {
-                    playsByDay[it.key] = it.value
-                    if (firstDate == null || it.key.isBefore(firstDate)) {
-                        firstDate = it.key
-                    }
+                    getMonthLiveData(it.key).value = it.value
                 }
 
-            gameIds.addAll(plays.data.map { it.gameId })
+            firstMonth.value = playsByMonth.keys.min()
 
-            this.playsByDay.value = playsByDay
+            gameIds.addAll(plays.data.map { it.gameId })
 
             gameIds.forEach { gameId ->
                 // TODO: fetch games in a single query
@@ -98,51 +81,42 @@ class HistoryViewModel(
         })
     }
 
-    // TODO: move to PlayRepository?
-    fun getPlaysByDay(day: CalendarDay): LiveData<List<PlayEntity>> =
-        Transformations.map(playsByDay) { playsByDay ->
-            playsByDay[day.date] ?: emptyList()
+    fun getPlaysForDay(date: LocalDate) =
+        Transformations.map(getMonthLiveData(YearMonth.from(date))) { plays ->
+            plays.filter {
+                val playDate = Instant.ofEpochMilli(it.dateInMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+                playDate == date
+            }
         }
 
-    fun getGamesFromPlays(plays: List<PlayEntity>): LiveData<Set<MutableLiveData<CollectionItemEntity>>> =
-        // FIXME: note great, duplication with above
-        Transformations.map(playsByDay) { _ ->
-            plays
+    fun getGamesForDay(date: LocalDate) =
+        Transformations.map(getPlaysForDay(date)) { list ->
+            list
                 .map { games.getOrPut(it.gameId) { MutableLiveData() } }
                 .toSet()
         }
 
     fun getNumberOfMonthsBetweenFirstPlayAndNow() =
-        Transformations.map(playsByDay) {
-            if (firstDate != null)
+        Transformations.map(firstMonth) {
+            if (it != null)
                 ChronoUnit.MONTHS.between(
-                    YearMonth.from(firstDate),
+                    YearMonth.from(it),
                     YearMonth.from(LocalDate.now())
                 ).toInt()
             else 0
         }
 
-    fun getStatsForMonth(month: YearMonth): LiveData<PlayStatsForMonth> {
-
-        val fromDay = month.atDay(1)
-        val toDay = month.atEndOfMonth()
-
-        return Transformations.map(playsByDay) { playsByDay ->
-
-            val plays = playsByDay.flatMap { day ->
-                if (day.key.isAfter(fromDay) && day.key.isBefore(toDay))
-                    day.value
-                else
-                    emptyList()
-            }
-
+    fun getStatsForMonth(yearMonth: YearMonth): LiveData<PlayStatsForMonth> =
+        Transformations.map(getMonthLiveData(yearMonth)) { plays ->
             PlayStatsForMonth(
-                plays.distinctBy { it.gameId }.count(),
-                plays.sumBy { it.quantity },
-                plays.sumBy { it.length }
+                gamesPlayed = plays.distinctBy { it.gameId }.count(),
+                numberOfPlays = plays.sumBy { it.quantity },
+                hoursPlayed = plays.sumBy { it.length }
             )
         }
-    }
+
+    private fun getMonthLiveData(yearMonth: YearMonth) =
+        playsByMonth.getOrPut(yearMonth) { MutableLiveData() }
 }
 
 data class PlayStatsForMonth(
