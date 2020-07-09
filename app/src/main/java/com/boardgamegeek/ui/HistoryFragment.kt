@@ -29,6 +29,7 @@ import com.boardgamegeek.R
 import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
 import com.boardgamegeek.ui.viewmodel.PlayStatsForMonth
+import com.boardgamegeek.ui.viewmodel.PlaysViewModel
 import com.karumi.weak.weak
 import com.kizitonwose.calendarview.model.CalendarDay
 import com.kizitonwose.calendarview.model.CalendarMonth
@@ -63,6 +64,9 @@ class CalendarFragment :
     private val viewModel by activityViewModels<HistoryViewModel> {
         HistoryViewModelFactory(requireActivity().application, viewLifecycleOwner)
     }
+
+    private val playsViewModel by activityViewModels<PlaysViewModel>()
+
     private var binding: ViewDataBinding? = null
     private lateinit var navigator: HistoryFragmentNavigator
 
@@ -203,9 +207,15 @@ class CalendarFragment :
     }
 
     private fun setupPlaysList() {
-//        recyclerView.apply {
-//
-//        }
+
+        val playsFragment = PlaysFragment.newInstance()
+
+        childFragmentManager
+            .beginTransaction()
+            .replace(R.id.playsList, playsFragment)
+            .commit()
+
+        playsViewModel.setFilter(PlaysViewModel.FilterType.ALL)
     }
 
     // ----------------------------
