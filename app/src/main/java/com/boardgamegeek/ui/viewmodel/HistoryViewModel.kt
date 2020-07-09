@@ -39,9 +39,9 @@ class HistoryViewModel(
 
     private val playsByMonth = mutableMapOf<YearMonth, MutableLiveData<List<PlayEntity>>>()
     private var firstMonth = MutableLiveData<YearMonth?>()
-
     private val games = mutableMapOf<Int, MutableLiveData<CollectionItemEntity>>()
 
+    val selectedDate = MutableLiveData<LocalDate?>()
     val selectedMonth = MutableLiveData<YearMonth?>()
     val selectedMonthStats = Transformations.map(selectedMonth) { it?.let { getStatsForMonth(it) } }
 

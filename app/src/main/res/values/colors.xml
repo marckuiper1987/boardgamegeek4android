@@ -16,6 +16,7 @@
 	<color name="secondary_text">#8a000000</color>
 	<color name="inverse_text">#ffffff</color>
 	<color name="inverse_secondary_text">#b3ffffff</color>
+	<color name="subtle_text">#aaaaaa</color>
 
 	<color name="black_overlay">#CC000000</color>
 	<color name="black_overlay_light">#6000</color>

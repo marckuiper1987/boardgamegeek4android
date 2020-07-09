@@ -32,10 +32,10 @@ import com.boardgamegeek.ui.viewmodel.PlayStatsForMonth
 import com.karumi.weak.weak
 import com.kizitonwose.calendarview.model.CalendarDay
 import com.kizitonwose.calendarview.model.CalendarMonth
-import com.kizitonwose.calendarview.model.DayOwner
 import com.kizitonwose.calendarview.ui.DayBinder
 import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder
 import com.kizitonwose.calendarview.ui.ViewContainer
+import kotlinx.android.synthetic.main.calendar_day.view.calendarDay
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDayFrame
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDayText
 import kotlinx.android.synthetic.main.calendar_header.view.legendLayout
@@ -63,10 +63,7 @@ class CalendarFragment :
     private val viewModel by activityViewModels<HistoryViewModel> {
         HistoryViewModelFactory(requireActivity().application, viewLifecycleOwner)
     }
-
     private var binding: ViewDataBinding? = null
-    private var selectedDate: LocalDate? = null
-
     private lateinit var navigator: HistoryFragmentNavigator
 
     // ----------------------------
@@ -112,34 +109,31 @@ class CalendarFragment :
     // View events
     // ----------------------------
 
+    private var selectedDate: LocalDate? = null
+        set(date) {
+            field?.let {
+                history_calendar?.notifyDateChanged(it)
+            }
+            field = date
+            viewModel.selectedDate.value = date
+            date?.let {
+                history_calendar?.notifyDateChanged(it)
+            }
+//                updateAdapterForDate(null)
+        }
+
     private var selectedMonth: YearMonth? = null
         set(yearMonth) {
             field = yearMonth
-
             viewModel.selectedMonth.value = yearMonth
 
+            selectedDate = null
             listener?.onChangeMonth(yearMonth)
-
-            if (yearMonth != null) {
-                history_calendar?.scrollToMonth(yearMonth)
-            }
-
-            selectedDate?.let {
-                // Clear selection if we scroll to a new month.
-                selectedDate = null
-                history_calendar.notifyDateChanged(it)
-//                updateAdapterForDate(null)
-            }
+            yearMonth?.let { history_calendar?.scrollToMonth(it) }
         }
 
     override fun onSelectDate(date: LocalDate) {
-        if (selectedDate != date) {
-            val oldDate = selectedDate
-            selectedDate = date
-            history_calendar.notifyDateChanged(date)
-            oldDate?.let { history_calendar.notifyDateChanged(it) }
-            //updateAdapterForDate(day.date)
-        }
+        selectedDate = date
     }
 
     override fun onNavigateToMonth(yearMonth: YearMonth) {
@@ -204,7 +198,7 @@ class CalendarFragment :
 
         (displayMetrics.widthPixels / 7).let {
             history_calendar.dayWidth = it
-            history_calendar.dayHeight = it + 20
+            history_calendar.dayHeight = it + 44 // add height of text box containing day number
         }
     }
 
@@ -327,8 +321,10 @@ class HistoryListAdapter(
         viewModel
             .getNumberOfMonthsBetweenFirstPlayAndNow()
             .observe(viewLifecycleOwner, Observer {
-                monthCount = it
-                notifyDataSetChanged()
+                if (it != monthCount) {
+                    monthCount = it
+                    notifyDataSetChanged()
+                }
             })
     }
 
@@ -366,6 +362,7 @@ class HistoryListAdapter(
 class DayViewContainer(view: View, listener: Listener?) : ViewContainer(view) {
     lateinit var day: CalendarDay
 
+    val layout: LinearLayout = view.calendarDay
     val textView: TextView = view.calendarDayText
     val frame: FrameLayout = view.calendarDayFrame
 
@@ -375,9 +372,7 @@ class DayViewContainer(view: View, listener: Listener?) : ViewContainer(view) {
 
     init {
         view.setOnClickListener {
-            if (day.owner == DayOwner.THIS_MONTH) {
-                listener?.onSelectDate(day.date)
-            }
+            listener?.onSelectDate(day.date)
         }
     }
 }
@@ -394,6 +389,8 @@ class CalendarDayBinder(
     private val viewModel by weak(viewModel)
     private val listener by weak(listener)
 
+    private val today = LocalDate.now()
+
     override fun create(view: View) = DayViewContainer(view, listener)
     override fun bind(container: DayViewContainer, day: CalendarDay) {
 
@@ -404,12 +401,26 @@ class CalendarDayBinder(
         val viewLifecycleOwner = viewLifecycleOwner ?: return
         val viewModel = viewModel ?: return
 
-        container.textView.setTextColor(ContextCompat.getColor(context,
-            if (day.owner == DayOwner.THIS_MONTH)
-                R.color.primary_text
-            else
-                R.color.border
-        ))
+//        container.textView.setTextColor(ContextCompat.getColor(context,
+//            if (day.owner == DayOwner.THIS_MONTH)
+//                R.color.primary_text
+//            else
+//                R.color.subtle_text
+//        ))
+//
+//        container.frame.alpha = if (day.owner == DayOwner.THIS_MONTH) 1f else .3f
+
+        when (day.date) {
+            viewModel.selectedDate.value -> {
+                container.layout.setBackgroundColor(ContextCompat.getColor(context, R.color.border))
+            }
+            today -> {
+
+            }
+            else -> {
+                container.layout.setBackgroundColor(ContextCompat.getColor(context, R.color.background))
+            }
+        }
 
         viewModel.getGamesForDay(day.date).observe(viewLifecycleOwner, Observer { games ->
             container.frame.removeAllViews()
