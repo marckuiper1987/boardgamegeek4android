@@ -119,11 +119,13 @@ class CalendarFragment :
                 history_calendar?.notifyDateChanged(it)
             }
             field = date
+
             viewModel.selectedDate.value = date
+            playsViewModel.setDate(date.toString())
+
             date?.let {
                 history_calendar?.notifyDateChanged(it)
             }
-//                updateAdapterForDate(null)
         }
 
     private var selectedMonth: YearMonth? = null
@@ -208,14 +210,14 @@ class CalendarFragment :
 
     private fun setupPlaysList() {
 
-        val playsFragment = PlaysFragment.newInstance()
+        val playsFragment = PlaysFragment.newInstanceForDay()
 
         childFragmentManager
             .beginTransaction()
             .replace(R.id.playsList, playsFragment)
             .commit()
 
-        playsViewModel.setFilter(PlaysViewModel.FilterType.ALL)
+//        playsViewModel.setFilter(PlaysViewModel.FilterType.ALL)
     }
 
     // ----------------------------
@@ -422,7 +424,7 @@ class CalendarDayBinder(
 
         when (day.date) {
             viewModel.selectedDate.value -> {
-                container.layout.setBackgroundColor(ContextCompat.getColor(context, R.color.border))
+                container.layout.setBackgroundColor(ContextCompat.getColor(context, R.color.light_blue))
             }
             today -> {
 

@@ -34,7 +34,7 @@
 				<FrameLayout
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:background="@color/border"
+					android:background="@color/light_blue"
 					android:paddingTop="7dp"
 					android:paddingBottom="7dp">
 					<include layout="@layout/calendar_header" />
@@ -49,7 +49,7 @@
 					app:cv_orientation="horizontal"
 					app:cv_outDateStyle="endOfGrid"
 					app:cv_scrollMode="paged"
-					android:background="@color/border"
+					android:background="@color/light_blue"
 					tools:ignore="NestedWeights" />
 			</FrameLayout>
 
@@ -62,7 +62,7 @@
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:background="@color/border"
+				android:background="@color/light_blue"
 				android:onClick="@{() -> listener.onNavigateToOverview()}">
 
 				<TextView

@@ -15,7 +15,7 @@
 		android:layout_height="wrap_content"
 		android:layout_margin="5dp"
 		app:strokeWidth="1dp"
-		app:strokeColor="@color/border"
+		app:strokeColor="@color/light_blue"
 		android:background="@color/background"
 		android:onClick="@{() -> listener.onNavigateToMonth(yearMonth)}">
 

@@ -58,6 +58,7 @@ open class PlaysFragment : Fragment(), ActionMode.Callback {
     private var arePlayersCustomSorted: Boolean = false
     private var emptyStringResId: Int = 0
     private var showGameName = true
+    private var showItemDecoration = true
     private var isSyncing = false
     private var actionMode: ActionMode? = null
 
@@ -73,15 +74,16 @@ open class PlaysFragment : Fragment(), ActionMode.Callback {
         viewModel.plays.observe(viewLifecycleOwner, Observer {
             progressBar.isVisible = it.status == Status.REFRESHING
             adapter.items = it.data ?: emptyList()
-            val sectionItemDecoration = RecyclerSectionItemDecoration(
+            if (showItemDecoration) {
+                val sectionItemDecoration = RecyclerSectionItemDecoration(
                     resources.getDimensionPixelSize(R.dimen.recycler_section_header_height),
                     adapter
-            )
-            while (recyclerView.itemDecorationCount > 0) {
-                recyclerView.removeItemDecorationAt(0)
+                )
+                while (recyclerView.itemDecorationCount > 0) {
+                    recyclerView.removeItemDecorationAt(0)
+                }
+                recyclerView.addItemDecoration(sectionItemDecoration)
             }
-            recyclerView.addItemDecoration(sectionItemDecoration)
-
             if (it.data.isNullOrEmpty()) {
                 emptyContainer.fadeIn()
                 recyclerView.fadeOut()
@@ -126,6 +128,7 @@ open class PlaysFragment : Fragment(), ActionMode.Callback {
         emptyStringResId = arguments?.getInt(KEY_EMPTY_STRING_RES_ID, R.string.empty_plays)
                 ?: R.string.empty_plays
         showGameName = arguments?.getBoolean(KEY_SHOW_GAME_NAME, true) ?: true
+        showItemDecoration = arguments?.getBoolean(KEY_SHOW_ITEM_DECORATION, true) ?: true
         gameId = arguments?.getInt(KEY_GAME_ID, INVALID_ID) ?: INVALID_ID
         gameName = arguments?.getString(KEY_GAME_NAME)
         thumbnailUrl = arguments?.getString(KEY_THUMBNAIL_URL)
@@ -410,6 +413,7 @@ open class PlaysFragment : Fragment(), ActionMode.Callback {
         private const val KEY_ICON_COLOR = "ICON_COLOR"
         private const val KEY_EMPTY_STRING_RES_ID = "EMPTY_STRING_RES_ID"
         private const val KEY_SHOW_GAME_NAME = "SHOW_GAME_NAME"
+        private const val KEY_SHOW_ITEM_DECORATION = "SHOW_ITEM_DECORATION"
 
         fun newInstance(): PlaysFragment {
             return PlaysFragment().withArguments(
@@ -448,6 +452,15 @@ open class PlaysFragment : Fragment(), ActionMode.Callback {
         fun newInstanceForPlayer(): PlaysFragment {
             return PlaysFragment().apply {
                 arguments = bundleOf(KEY_EMPTY_STRING_RES_ID to R.string.empty_plays_player)
+            }
+        }
+
+        fun newInstanceForDay(): PlaysFragment {
+            return PlaysFragment().apply {
+                arguments = bundleOf(
+                    KEY_EMPTY_STRING_RES_ID to R.string.empty_plays_day,
+                    KEY_SHOW_ITEM_DECORATION to false
+                )
             }
         }
     }

@@ -22,8 +22,6 @@
 	<color name="black_overlay_light">#6000</color>
 	<color name="no_image">#808080</color>
 	<color name="empty_tint">#aaaaaa</color>
-
-	<color name="border">#eeeeee</color>
 	<color name="background">#ffffff</color>
 
 	<color name="best">#00a550</color>

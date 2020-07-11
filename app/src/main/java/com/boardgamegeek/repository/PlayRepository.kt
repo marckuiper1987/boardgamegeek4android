@@ -16,15 +16,37 @@ import com.boardgamegeek.auth.AccountUtils
 import com.boardgamegeek.db.CollectionDao
 import com.boardgamegeek.db.GameDao
 import com.boardgamegeek.db.PlayDao
-import com.boardgamegeek.entities.*
-import com.boardgamegeek.extensions.*
+import com.boardgamegeek.entities.GameForPlayStatEntity
+import com.boardgamegeek.entities.HIndexEntity
+import com.boardgamegeek.entities.LocationEntity
+import com.boardgamegeek.entities.PlayEntity
+import com.boardgamegeek.entities.PlayPlayerEntity
+import com.boardgamegeek.entities.PlayerColorEntity
+import com.boardgamegeek.entities.PlayerDetailEntity
+import com.boardgamegeek.entities.PlayerEntity
+import com.boardgamegeek.entities.RefreshableResource
+import com.boardgamegeek.extensions.PREFERENCES_KEY_SYNC_PLAYS
+import com.boardgamegeek.extensions.PlayStats
+import com.boardgamegeek.extensions.applyBatch
+import com.boardgamegeek.extensions.asDateForApi
+import com.boardgamegeek.extensions.executeAsyncTask
+import com.boardgamegeek.extensions.get
+import com.boardgamegeek.extensions.getText
+import com.boardgamegeek.extensions.greaterThanZero
+import com.boardgamegeek.extensions.preferences
+import com.boardgamegeek.extensions.set
+import com.boardgamegeek.extensions.whereZeroOrNull
 import com.boardgamegeek.io.Adapter
 import com.boardgamegeek.io.model.PlaysResponse
 import com.boardgamegeek.livedata.RefreshableResourceLoader
 import com.boardgamegeek.mappers.PlayMapper
 import com.boardgamegeek.model.Play
 import com.boardgamegeek.model.persister.PlayPersister
-import com.boardgamegeek.pref.*
+import com.boardgamegeek.pref.SyncPrefs
+import com.boardgamegeek.pref.getPlaysNewestTimestamp
+import com.boardgamegeek.pref.getPlaysOldestTimestamp
+import com.boardgamegeek.pref.setPlaysNewestTimestamp
+import com.boardgamegeek.pref.setPlaysOldestTimestamp
 import com.boardgamegeek.provider.BggContract
 import com.boardgamegeek.tasks.CalculatePlayStatsTask
 import com.boardgamegeek.ui.PlayStatsActivity
@@ -32,7 +54,7 @@ import com.boardgamegeek.util.NotificationUtils
 import com.boardgamegeek.util.RateLimiter
 import retrofit2.Call
 import timber.log.Timber
-import java.util.*
+import java.util.ArrayList
 import java.util.concurrent.TimeUnit
 
 open class PlayRefresher
@@ -97,6 +119,14 @@ class PlayRepository(val application: BggApplication) : PlayRefresher() {
         return object : PlayRefreshableResourceLoader(application) {
             override fun loadFromDatabase(): LiveData<List<PlayEntity>> {
                 return playDao.loadPlaysByPlayerName(playerName)
+            }
+        }.asLiveData()
+    }
+
+    fun loadPlaysByDate(date: String): LiveData<RefreshableResource<List<PlayEntity>>> {
+        return object : PlayRefreshableResourceLoader(application) {
+            override fun loadFromDatabase(): LiveData<List<PlayEntity>> {
+                return playDao.loadPlaysByDate(date)
             }
         }.asLiveData()
     }

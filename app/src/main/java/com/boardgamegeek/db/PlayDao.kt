@@ -5,11 +5,42 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import com.boardgamegeek.BggApplication
 import com.boardgamegeek.auth.AccountUtils
-import com.boardgamegeek.entities.*
-import com.boardgamegeek.extensions.*
+import com.boardgamegeek.entities.LocationEntity
+import com.boardgamegeek.entities.PlayEntity
+import com.boardgamegeek.entities.PlayPlayerEntity
+import com.boardgamegeek.entities.PlayerColorEntity
+import com.boardgamegeek.entities.PlayerDetailEntity
+import com.boardgamegeek.entities.PlayerEntity
+import com.boardgamegeek.extensions.applyBatch
+import com.boardgamegeek.extensions.asDateForApi
+import com.boardgamegeek.extensions.ascending
+import com.boardgamegeek.extensions.collateNoCase
+import com.boardgamegeek.extensions.descending
+import com.boardgamegeek.extensions.getBoolean
+import com.boardgamegeek.extensions.getDoubleOrZero
+import com.boardgamegeek.extensions.getInt
+import com.boardgamegeek.extensions.getIntOrNull
+import com.boardgamegeek.extensions.getIntOrZero
+import com.boardgamegeek.extensions.getLong
+import com.boardgamegeek.extensions.getLongOrNull
+import com.boardgamegeek.extensions.getLongOrZero
+import com.boardgamegeek.extensions.getString
+import com.boardgamegeek.extensions.getStringOrEmpty
+import com.boardgamegeek.extensions.joinTo
+import com.boardgamegeek.extensions.load
+import com.boardgamegeek.extensions.queryCount
+import com.boardgamegeek.extensions.queryLongs
+import com.boardgamegeek.extensions.rowExists
+import com.boardgamegeek.extensions.use
+import com.boardgamegeek.extensions.whereEqualsOrNull
+import com.boardgamegeek.extensions.whereZeroOrNull
 import com.boardgamegeek.livedata.AbsentLiveData
 import com.boardgamegeek.livedata.RegisteredLiveData
-import com.boardgamegeek.provider.BggContract.*
+import com.boardgamegeek.provider.BggContract.Games
+import com.boardgamegeek.provider.BggContract.INVALID_ID
+import com.boardgamegeek.provider.BggContract.PlayPlayers
+import com.boardgamegeek.provider.BggContract.PlayerColors
+import com.boardgamegeek.provider.BggContract.Plays
 import timber.log.Timber
 
 class PlayDao(private val context: BggApplication) {
@@ -51,6 +82,13 @@ class PlayDao(private val context: BggApplication) {
         val uri = Plays.CONTENT_URI
         return RegisteredLiveData(context, uri, false) {
             return@RegisteredLiveData loadPlays(uri, createLocationPlaySelectionAndArgs(locationName))
+        }
+    }
+
+    fun loadPlaysByDate(date: String): LiveData<List<PlayEntity>> {
+        val uri = Plays.CONTENT_URI
+        return RegisteredLiveData(context, uri, false) {
+            loadPlays(uri, createDatePlaySelectionAndArgs(date))
         }
     }
 
@@ -150,6 +188,9 @@ class PlayDao(private val context: BggApplication) {
 
     private fun createLocationPlaySelectionAndArgs(locationName: String) =
             "${Plays.LOCATION}=? AND ${Plays.DELETE_TIMESTAMP.whereZeroOrNull()}" to arrayOf(locationName)
+
+    private fun createDatePlaySelectionAndArgs(date: String) =
+            "${Plays.DATE}=?  AND ${Plays.DELETE_TIMESTAMP.whereZeroOrNull()}" to arrayOf(date)
 
     private fun createUsernamePlaySelectionAndArgs(username: String) =
             "${PlayPlayers.USER_NAME}=? AND ${Plays.DELETE_TIMESTAMP.whereZeroOrNull()}" to arrayOf(username)

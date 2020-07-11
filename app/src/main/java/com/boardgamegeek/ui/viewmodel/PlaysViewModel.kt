@@ -1,7 +1,6 @@
 package com.boardgamegeek.ui.viewmodel
 
 import android.app.Application
-import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -33,7 +32,7 @@ class PlaysViewModel(application: Application) : AndroidViewModel(application) {
     )
 
     enum class Mode {
-        ALL, GAME, BUDDY, PLAYER, LOCATION
+        ALL, GAME, BUDDY, PLAYER, LOCATION, DATE
     }
 
     enum class FilterType {
@@ -72,6 +71,7 @@ class PlaysViewModel(application: Application) : AndroidViewModel(application) {
             Mode.LOCATION -> playRepository.loadPlaysByLocation(it.name)
             Mode.BUDDY -> playRepository.loadPlaysByUsername(it.name)
             Mode.PLAYER -> playRepository.loadPlaysByPlayerName(it.name)
+            Mode.DATE -> playRepository.loadPlaysByDate(it.name)
         }
     }
 
@@ -101,6 +101,10 @@ class PlaysViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setPlayerName(playerName: String) {
         playInfo.value = PlayInfo(Mode.PLAYER, playerName)
+    }
+
+    fun setDate(date: String) {
+        playInfo.value = PlayInfo(Mode.DATE, date)
     }
 
     fun setFilter(type: FilterType) {
