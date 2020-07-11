@@ -43,12 +43,12 @@ import kotlinx.android.synthetic.main.calendar_header.view.legendLayout
 import kotlinx.android.synthetic.main.fragment_history.history_calendar
 import kotlinx.android.synthetic.main.fragment_history.history_detail
 import kotlinx.android.synthetic.main.fragment_history.history_summary_list
-import org.threeten.bp.DayOfWeek
-import org.threeten.bp.LocalDate
-import org.threeten.bp.YearMonth
-import org.threeten.bp.format.DateTimeFormatter
-import org.threeten.bp.format.TextStyle
-import org.threeten.bp.temporal.WeekFields
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.time.temporal.WeekFields
 import java.util.Locale
 
 interface CalendarViewListener {

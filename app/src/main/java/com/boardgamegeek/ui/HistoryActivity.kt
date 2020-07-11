@@ -2,8 +2,8 @@ package com.boardgamegeek.ui
 
 import androidx.fragment.app.Fragment
 import com.boardgamegeek.R
-import org.threeten.bp.YearMonth
-import org.threeten.bp.format.DateTimeFormatter
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 
 class HistoryActivity : TopLevelSinglePaneActivity(), CalendarFragment.Listener {
 

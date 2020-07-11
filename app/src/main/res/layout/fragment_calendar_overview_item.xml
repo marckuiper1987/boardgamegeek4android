@@ -4,7 +4,7 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto">
 
 	<data>
-		<variable name="yearMonth" type="org.threeten.bp.YearMonth" />
+		<variable name="yearMonth" type="java.time.YearMonth" />
 		<variable name="monthString" type="String" />
 		<variable name="stats" type="androidx.lifecycle.LiveData&lt;com.boardgamegeek.ui.viewmodel.PlayStatsForMonth&gt;" />
 		<variable name="listener" type="com.boardgamegeek.ui.HistoryListAdapter.Listener" />
