@@ -54,10 +54,13 @@ import com.boardgamegeek.util.NotificationUtils
 import com.boardgamegeek.util.RateLimiter
 import retrofit2.Call
 import timber.log.Timber
+import java.time.YearMonth
 import java.util.ArrayList
 import java.util.concurrent.TimeUnit
 
 open class PlayRefresher
+
+typealias RefreshablePlayEntityListLiveData = LiveData<RefreshableResource<List<PlayEntity>>>
 
 class PlayRepository(val application: BggApplication) : PlayRefresher() {
     private val playDao = PlayDao(application)
@@ -127,6 +130,17 @@ class PlayRepository(val application: BggApplication) : PlayRefresher() {
         return object : PlayRefreshableResourceLoader(application) {
             override fun loadFromDatabase(): LiveData<List<PlayEntity>> {
                 return playDao.loadPlaysByDate(date)
+            }
+        }.asLiveData()
+    }
+
+    fun loadPlaysByYearMonth(yearMonth: YearMonth): RefreshablePlayEntityListLiveData {
+        return object : PlayRefreshableResourceLoader(application) {
+            override fun loadFromDatabase(): LiveData<List<PlayEntity>> {
+                return playDao.loadPlaysByDateRange(
+                    dateFrom = yearMonth.atDay(1).toString(),
+                    dateTo = yearMonth.atEndOfMonth().toString()
+                )
             }
         }.asLiveData()
     }

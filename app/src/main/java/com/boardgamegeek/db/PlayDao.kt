@@ -42,6 +42,7 @@ import com.boardgamegeek.provider.BggContract.PlayPlayers
 import com.boardgamegeek.provider.BggContract.PlayerColors
 import com.boardgamegeek.provider.BggContract.Plays
 import timber.log.Timber
+import java.time.YearMonth
 
 class PlayDao(private val context: BggApplication) {
     enum class PlaysSortBy {
@@ -89,6 +90,13 @@ class PlayDao(private val context: BggApplication) {
         val uri = Plays.CONTENT_URI
         return RegisteredLiveData(context, uri, false) {
             loadPlays(uri, createDatePlaySelectionAndArgs(date))
+        }
+    }
+
+    fun loadPlaysByDateRange(dateFrom: String, dateTo: String): LiveData<List<PlayEntity>> {
+        val uri = Plays.CONTENT_URI
+        return RegisteredLiveData(context, uri, false) {
+            loadPlays(uri, createDateRangePlaySelectionAndArgs(dateFrom, dateTo))
         }
     }
 
@@ -190,7 +198,10 @@ class PlayDao(private val context: BggApplication) {
             "${Plays.LOCATION}=? AND ${Plays.DELETE_TIMESTAMP.whereZeroOrNull()}" to arrayOf(locationName)
 
     private fun createDatePlaySelectionAndArgs(date: String) =
-            "${Plays.DATE}=?  AND ${Plays.DELETE_TIMESTAMP.whereZeroOrNull()}" to arrayOf(date)
+            "${Plays.DATE}=? AND ${Plays.DELETE_TIMESTAMP.whereZeroOrNull()}" to arrayOf(date)
+
+    private fun createDateRangePlaySelectionAndArgs(dateFrom: String, dateTo: String) =
+            "${Plays.DATE}>=? AND ${Plays.DATE}<=? AND ${Plays.DELETE_TIMESTAMP.whereZeroOrNull()}" to arrayOf(dateFrom, dateTo)
 
     private fun createUsernamePlaySelectionAndArgs(username: String) =
             "${PlayPlayers.USER_NAME}=? AND ${Plays.DELETE_TIMESTAMP.whereZeroOrNull()}" to arrayOf(username)
