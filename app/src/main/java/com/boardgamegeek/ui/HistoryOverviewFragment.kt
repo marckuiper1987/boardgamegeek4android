@@ -40,7 +40,7 @@ class HistoryOverviewFragment(
     }
 
     private fun setup() {
-        history_overview_list.also {
+        history_overview_list.let {
             it.layoutManager = LinearLayoutManager(this.context)
             it.adapter = HistoryOverviewAdapter(viewModel, viewLifecycleOwner, listener)
         }

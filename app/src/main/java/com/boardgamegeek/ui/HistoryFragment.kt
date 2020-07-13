@@ -1,24 +1,22 @@
 package com.boardgamegeek.ui
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.activity.OnBackPressedCallback
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import com.boardgamegeek.BR
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
 import com.boardgamegeek.ui.viewmodel.PlaysViewModel
-import kotlinx.android.synthetic.main.fragment_history.history_detail
-import kotlinx.android.synthetic.main.fragment_history.history_overview_frame
+import com.sothree.slidinguppanel.SlidingUpPanelLayout
+import kotlinx.android.synthetic.main.fragment_history.sliding_layout
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -111,15 +109,14 @@ class HistoryFragment :
 
     override fun onNavigateToMonth(yearMonth: YearMonth) {
         backPressedCallback.isEnabled = true
-        selectedMonth = yearMonth
         navigateToCalendar(yearMonth)
-        markMonthLoaded(yearMonth)
+        selectedMonth = yearMonth
     }
 
     override fun onNavigateToOverview() {
         backPressedCallback.isEnabled = false
-        selectedMonth = null
         navigateToOverview()
+        selectedMonth = null
     }
 
     private val backPressedCallback = object : OnBackPressedCallback(false) {
@@ -160,81 +157,41 @@ class HistoryFragment :
     // ----------------------------
 
     private val monthsLoaded = mutableSetOf<YearMonth>()
-    private var animationDuration: Int = 0
 
     private fun setupNavigation() {
-        animationDuration = resources.getInteger(android.R.integer.config_mediumAnimTime)
-        history_detail.visibility = View.GONE
+
+        viewModel.selectedMonth.observe(viewLifecycleOwner, Observer {
+            it?.let { monthsLoaded.add(it) }
+        })
+
+        sliding_layout.addPanelSlideListener(object : SlidingUpPanelLayout.PanelSlideListener {
+            override fun onPanelSlide(panel: View?, slideOffset: Float) { }
+            override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) {
+                when (newState) {
+                    SlidingUpPanelLayout.PanelState.EXPANDED -> {
+                        calendarFragment?.showCalendar()
+                        viewModel.selectedMonth.value?.let { monthsLoaded.add(it) }
+                    }
+                    SlidingUpPanelLayout.PanelState.COLLAPSED -> {
+                        calendarFragment?.hideCalendar()
+                    }
+                    else -> { }
+                }
+            }
+        })
     }
 
     private fun navigateToOverview() {
-        fadeIn(history_overview_frame, towardScreen = false, yearMonth = null)
-        fadeOut(history_detail, towardScreen = false)
+        sliding_layout.panelState = SlidingUpPanelLayout.PanelState.COLLAPSED
     }
 
     private fun navigateToCalendar(yearMonth: YearMonth) {
-        fadeIn(history_detail, towardScreen = true, yearMonth = yearMonth)
-        fadeOut(history_overview_frame, towardScreen = true)
-    }
+        sliding_layout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
 
-    private fun markMonthLoaded(yearMonth: YearMonth) {
-        monthsLoaded.add(yearMonth)
-    }
-
-    private fun scaleBy(towardScreen: Boolean) =
-        if (towardScreen) .3f else -.3f
-
-    private fun fadeIn(view: View, towardScreen: Boolean, yearMonth: YearMonth?) {
-        val scaleBy = scaleBy(towardScreen)
-        view.apply {
-            alpha = 0f
-            visibility = View.VISIBLE
-
-            scaleX = 1 - scaleBy
-            scaleY = 1 - scaleBy
-
-            // If this month was shown before, make the calendar visible immediately.
-            // Otherwise, it is made visible after the animation has ended.
-            if (yearMonth != null && monthsLoaded.contains(yearMonth)) {
-                calendarFragment?.showCalendar()
-            }
-
-            animate()
-                .alpha(1f)
-                .scaleXBy(scaleBy)
-                .scaleYBy(scaleBy)
-                .setDuration(animationDuration.toLong())
-                .setInterpolator(AccelerateDecelerateInterpolator())
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        if (towardScreen) {
-                            calendarFragment?.showCalendar()
-                            if (yearMonth != null) {
-                                monthsLoaded.add(yearMonth)
-                            }
-                        }
-                    }
-                })
+        // If this month was shown before, make the calendar visible immediately.
+        // Otherwise, it is made visible after panel has finished sliding up.
+        if (monthsLoaded.contains(yearMonth)) {
+            calendarFragment?.showCalendar()
         }
-    }
-
-    private fun fadeOut(view: View, towardScreen: Boolean) {
-        val scaleBy = scaleBy(towardScreen)
-        view.animate()
-            .alpha(0f)
-            .scaleXBy(scaleBy)
-            .scaleYBy(scaleBy)
-            .setDuration(animationDuration.toLong())
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    view.visibility = View.GONE
-                    if (!towardScreen) {
-                        // Hide calendar from view to improve performance of
-                        // navigating back to it later.
-                        calendarFragment?.hideCalendar()
-                    }
-                }
-            })
     }
 }
