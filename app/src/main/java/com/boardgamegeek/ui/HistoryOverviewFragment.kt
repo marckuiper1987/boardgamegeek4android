@@ -36,7 +36,10 @@ class HistoryOverviewFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setup()
+    }
 
+    private fun setup() {
         history_overview_list.also {
             it.layoutManager = LinearLayoutManager(this.context)
             it.adapter = HistoryOverviewAdapter(viewModel, viewLifecycleOwner, listener)

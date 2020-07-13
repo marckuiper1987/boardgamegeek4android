@@ -2,49 +2,26 @@ package com.boardgamegeek.ui
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.content.Context
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
-import androidx.core.content.ContextCompat
-import androidx.core.view.children
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
 import com.boardgamegeek.BR
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
 import com.boardgamegeek.ui.viewmodel.PlaysViewModel
-import com.karumi.weak.weak
-import com.kizitonwose.calendarview.model.CalendarDay
-import com.kizitonwose.calendarview.model.CalendarMonth
-import com.kizitonwose.calendarview.ui.DayBinder
-import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder
-import com.kizitonwose.calendarview.ui.ViewContainer
-import kotlinx.android.synthetic.main.calendar_day.view.calendarDay
-import kotlinx.android.synthetic.main.calendar_day.view.calendarDayFrame
-import kotlinx.android.synthetic.main.calendar_day.view.calendarDayText
-import kotlinx.android.synthetic.main.calendar_header.view.legendLayout
-import kotlinx.android.synthetic.main.fragment_history.history_calendar
+import kotlinx.android.synthetic.main.fragment_history.history_calendar_frame
 import kotlinx.android.synthetic.main.fragment_history.history_detail
 import kotlinx.android.synthetic.main.fragment_history.history_overview_frame
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.format.TextStyle
-import java.time.temporal.WeekFields
-import java.util.Locale
 
 interface CalendarViewListener {
     fun onNavigateToOverview()
@@ -54,6 +31,7 @@ class HistoryFragment :
     Fragment(),
     CalendarViewListener,
     HistoryOverviewAdapter.Listener,
+    HistoryCalendarFragment.Listener,
     DayViewContainer.Listener {
 
     private val viewModel by activityViewModels<HistoryViewModel> {
@@ -95,7 +73,7 @@ class HistoryFragment :
         navigator = HistoryFragmentNavigator(
             summaryList = history_overview_frame,
             detail = history_detail,
-            calendar = history_calendar,
+            calendar = history_calendar_frame,
             animationDuration = resources.getInteger(android.R.integer.config_mediumAnimTime)
         )
 
@@ -110,17 +88,9 @@ class HistoryFragment :
 
     private var selectedDate: LocalDate? = null
         set(date) {
-            field?.let {
-                history_calendar?.notifyDateChanged(it)
-            }
             field = date
-
             viewModel.selectedDate.value = date
             playsViewModel.setDate(date.toString())
-
-            date?.let {
-                history_calendar?.notifyDateChanged(it)
-            }
         }
 
     private var selectedMonth: YearMonth? = null
@@ -130,7 +100,6 @@ class HistoryFragment :
 
             selectedDate = null
             listener?.onChangeMonth(yearMonth)
-            yearMonth?.let { history_calendar?.scrollToMonth(it) }
         }
 
     override fun onSelectDate(date: LocalDate) {
@@ -141,6 +110,7 @@ class HistoryFragment :
         backPressedCallback.isEnabled = true
         selectedMonth = yearMonth
         navigator.navigateToCalendar(yearMonth)
+        navigator.markMonthLoaded(yearMonth)
     }
 
     override fun onNavigateToOverview() {
@@ -167,40 +137,10 @@ class HistoryFragment :
     }
 
     private fun setupCalendar() {
-
-        val daysOfWeek = daysOfWeekFromLocale()
-        val currentMonth = YearMonth.now()
-
-        history_calendar.setup(
-            startMonth = currentMonth.minusMonths(10), //  TODO
-            endMonth = currentMonth.plusMonths(0),
-            firstDayOfWeek = daysOfWeek.first()
-        )
-
-        history_calendar.scrollToMonth(selectedMonth ?: currentMonth)
-
-        setCalendarDayDimensions()
-
-        context?.also { context ->
-            history_calendar.dayBinder = CalendarDayBinder(context, viewLifecycleOwner, viewModel, this)
-            history_calendar.monthHeaderBinder = CalendarMonthHeaderBinder(daysOfWeek)
-        }
-
-        history_calendar.monthScrollListener = { month ->
-            selectedMonth = month.yearMonth
-            navigator.markMonthLoaded(month.yearMonth)
-        }
-    }
-
-    private fun setCalendarDayDimensions() {
-
-        val displayMetrics = DisplayMetrics()
-        activity?.windowManager?.defaultDisplay?.getMetrics(displayMetrics)
-
-        (displayMetrics.widthPixels / 7).let {
-            history_calendar.dayWidth = it
-            history_calendar.dayHeight = it + 44 // add height of text box containing day number
-        }
+        childFragmentManager
+            .beginTransaction()
+            .replace(R.id.history_calendar_frame, HistoryCalendarFragment(this, this))
+            .commit()
     }
 
     private fun setupPlaysList() {
@@ -304,115 +244,4 @@ class HistoryFragmentNavigator(
                 }
             })
     }
-}
-
-class DayViewContainer(view: View, listener: Listener?) : ViewContainer(view) {
-    lateinit var day: CalendarDay
-
-    val layout: LinearLayout = view.calendarDay
-    val textView: TextView = view.calendarDayText
-    val frame: FrameLayout = view.calendarDayFrame
-
-    interface Listener {
-        fun onSelectDate(date: LocalDate)
-    }
-
-    init {
-        view.setOnClickListener {
-            listener?.onSelectDate(day.date)
-        }
-    }
-}
-
-class CalendarDayBinder(
-    context: Context,
-    viewLifecycleOwner: LifecycleOwner,
-    viewModel: HistoryViewModel,
-    listener: DayViewContainer.Listener
-): DayBinder<DayViewContainer> {
-
-    private val context by weak(context)
-    private val viewLifecycleOwner by weak(viewLifecycleOwner)
-    private val viewModel by weak(viewModel)
-    private val listener by weak(listener)
-
-    private val today = LocalDate.now()
-
-    override fun create(view: View) = DayViewContainer(view, listener)
-    override fun bind(container: DayViewContainer, day: CalendarDay) {
-
-        container.day = day
-        container.textView.text = day.date.dayOfMonth.toString()
-
-        val context = context ?: return
-        val viewLifecycleOwner = viewLifecycleOwner ?: return
-        val viewModel = viewModel ?: return
-
-//        container.textView.setTextColor(ContextCompat.getColor(context,
-//            if (day.owner == DayOwner.THIS_MONTH)
-//                R.color.primary_text
-//            else
-//                R.color.subtle_text
-//        ))
-//
-//        container.frame.alpha = if (day.owner == DayOwner.THIS_MONTH) 1f else .3f
-
-        when (day.date) {
-            viewModel.selectedDate.value -> {
-                container.layout.setBackgroundColor(ContextCompat.getColor(context, R.color.light_blue))
-            }
-            today -> {
-
-            }
-            else -> {
-                container.layout.setBackgroundColor(ContextCompat.getColor(context, R.color.background))
-            }
-        }
-
-        viewModel.getGamesForDay(day.date).observe(viewLifecycleOwner, Observer { games ->
-            container.frame.removeAllViews()
-            container.frame.addView(
-                CalendarDayView(context).apply {
-                    setGames(games, viewLifecycleOwner)
-                },
-                ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            )
-        })
-    }
-}
-
-class MonthViewContainer(view: View) : ViewContainer(view) {
-    val legendLayout: LinearLayout = view.legendLayout
-}
-
-class CalendarMonthHeaderBinder(
-    private val daysOfWeek: Array<DayOfWeek>
-) : MonthHeaderFooterBinder<MonthViewContainer> {
-    override fun create(view: View) = MonthViewContainer(view)
-    override fun bind(container: MonthViewContainer, month: CalendarMonth) {
-
-        // Setup each header day text if we have not done that already.
-        if (container.legendLayout.tag == null) {
-            container.legendLayout.tag = month.yearMonth
-            container.legendLayout.children.map { it as TextView }.forEachIndexed { index, tv ->
-                tv.text = daysOfWeek[index].getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
-                    .toUpperCase(Locale.ENGLISH)
-            }
-            month.yearMonth
-        }
-    }
-}
-
-
-fun daysOfWeekFromLocale(): Array<DayOfWeek> {
-    val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
-    var daysOfWeek = DayOfWeek.values()
-    // Order `daysOfWeek` array so that firstDayOfWeek is at index 0.
-    // Only necessary if firstDayOfWeek != DayOfWeek.MONDAY which has ordinal 0.
-    if (firstDayOfWeek != DayOfWeek.MONDAY) {
-        val rhs = daysOfWeek.sliceArray(firstDayOfWeek.ordinal..daysOfWeek.indices.last)
-        val lhs = daysOfWeek.sliceArray(0 until firstDayOfWeek.ordinal)
-        daysOfWeek = rhs + lhs
-    }
-    return daysOfWeek
 }
