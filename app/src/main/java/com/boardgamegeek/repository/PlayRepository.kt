@@ -60,13 +60,19 @@ import java.util.concurrent.TimeUnit
 
 open class PlayRefresher
 
-typealias RefreshablePlayEntityListLiveData = LiveData<RefreshableResource<List<PlayEntity>>>
-
 class PlayRepository(val application: BggApplication) : PlayRefresher() {
     private val playDao = PlayDao(application)
     private val gameDao = GameDao(application)
     private val collectionDao = CollectionDao(application)
     private val prefs: SharedPreferences by lazy { application.preferences() }
+
+    fun getOldestPlayDate(): LiveData<RefreshableResource<List<PlayEntity>>> {
+        return object :  PlayRefreshableResourceLoader(application) {
+            override fun loadFromDatabase(): LiveData<List<PlayEntity>> {
+                return playDao.loadOldestPlay()
+            }
+        }.asLiveData()
+    }
 
     fun getPlays(sortBy: PlayDao.PlaysSortBy = PlayDao.PlaysSortBy.DATE): LiveData<RefreshableResource<List<PlayEntity>>> {
         return object : PlayRefreshableResourceLoader(application) {
@@ -134,7 +140,7 @@ class PlayRepository(val application: BggApplication) : PlayRefresher() {
         }.asLiveData()
     }
 
-    fun loadPlaysByYearMonth(yearMonth: YearMonth): RefreshablePlayEntityListLiveData {
+    fun loadPlaysByYearMonth(yearMonth: YearMonth): LiveData<RefreshableResource<List<PlayEntity>>> {
         return object : PlayRefreshableResourceLoader(application) {
             override fun loadFromDatabase(): LiveData<List<PlayEntity>> {
                 return playDao.loadPlaysByDateRange(

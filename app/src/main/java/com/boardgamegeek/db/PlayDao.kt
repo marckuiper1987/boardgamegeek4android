@@ -42,11 +42,13 @@ import com.boardgamegeek.provider.BggContract.PlayPlayers
 import com.boardgamegeek.provider.BggContract.PlayerColors
 import com.boardgamegeek.provider.BggContract.Plays
 import timber.log.Timber
-import java.time.YearMonth
 
 class PlayDao(private val context: BggApplication) {
     enum class PlaysSortBy {
         DATE, LOCATION, GAME, LENGTH
+    }
+    enum class PlaysFetch {
+        ALL, MIN, MAX
     }
 
     fun loadPlays(sortBy: PlaysSortBy): LiveData<List<PlayEntity>> {
@@ -116,7 +118,14 @@ class PlayDao(private val context: BggApplication) {
         }
     }
 
-    private fun loadPlays(uri: Uri, selection: Pair<String?, Array<String>?>, sortBy: PlaysSortBy = PlaysSortBy.DATE): ArrayList<PlayEntity> {
+    fun loadOldestPlay(): LiveData<List<PlayEntity>> {
+        val uri = Plays.CONTENT_URI
+        return RegisteredLiveData(context, uri, false) {
+            loadPlays(uri, fetch = PlaysFetch.MIN)
+        }
+    }
+
+    private fun loadPlays(uri: Uri, selection: Pair<String?, Array<String>?>? = null, sortBy: PlaysSortBy = PlaysSortBy.DATE, fetch: PlaysFetch = PlaysFetch.ALL): ArrayList<PlayEntity> {
         val list = arrayListOf<PlayEntity>()
         val sortOrder = when (sortBy) {
             PlaysSortBy.DATE -> ""
@@ -127,7 +136,11 @@ class PlayDao(private val context: BggApplication) {
         context.contentResolver.load(uri,
                 arrayOf(Plays._ID,
                         Plays.PLAY_ID,
-                        Plays.DATE,
+                        when (fetch) {
+                            PlaysFetch.ALL -> Plays.DATE
+                            PlaysFetch.MIN -> "min(${Plays.DATE}) as ${Plays.DATE}"
+                            PlaysFetch.MAX -> "max(${Plays.DATE}) as ${Plays.DATE}"
+                        },
                         Plays.OBJECT_ID,
                         Plays.ITEM_NAME,
                         Plays.QUANTITY,
@@ -147,8 +160,8 @@ class PlayDao(private val context: BggApplication) {
                         Games.HERO_IMAGE_URL,
                         Games.UPDATED_PLAYS
                 ),
-                selection.first,
-                selection.second,
+                selection?.first,
+                selection?.second,
                 sortOrder
         )?.use {
             if (it.moveToFirst()) {

@@ -10,14 +10,17 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.entities.CollectionItemEntity
+import com.boardgamegeek.entities.PlayEntity
+import com.boardgamegeek.entities.RefreshableResource
 import com.boardgamegeek.repository.GameCollectionRepository
 import com.boardgamegeek.repository.PlayRepository
-import com.boardgamegeek.repository.RefreshablePlayEntityListLiveData
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
+import java.util.Date
 
 class HistoryViewModelFactory(
     private val application: Application,
@@ -37,8 +40,8 @@ class HistoryViewModel(
     private val playRepository = PlayRepository(getApplication())
     private val gameCollectionRepository = GameCollectionRepository(getApplication())
 
-    private val playsByMonth = mutableMapOf<YearMonth, RefreshablePlayEntityListLiveData>()
-    private var firstMonth = MutableLiveData<YearMonth?>()
+    private val firstPlay: LiveData<RefreshableResource<List<PlayEntity>>>
+    private val playsByMonth = mutableMapOf<YearMonth, LiveData<RefreshableResource<List<PlayEntity>>>>()
     private val games = mutableMapOf<Int, MutableLiveData<CollectionItemEntity>>()
 
     val selectedDate = MutableLiveData<LocalDate?>()
@@ -46,7 +49,15 @@ class HistoryViewModel(
     val selectedMonthStats = Transformations.map(selectedMonth) { it?.let { getStatsForMonth(it) } }
 
     init {
-        firstMonth.value = YearMonth.parse("2020-01") // TODO
+        firstPlay = playRepository.getOldestPlayDate()
+    }
+
+    private val firstMonth = Transformations.map(firstPlay) { refreshable ->
+        refreshable.data?.firstOrNull()?.let {
+            YearMonth.from(
+                ZonedDateTime.ofInstant(Date(it.dateInMillis).toInstant(), ZoneId.systemDefault())
+            )
+        }
     }
 
     private fun getMonthLiveData(yearMonth: YearMonth) =
