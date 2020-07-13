@@ -16,6 +16,7 @@ import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
 import com.boardgamegeek.ui.viewmodel.PlaysViewModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
+import kotlinx.android.synthetic.main.fragment_history.scroll_view
 import kotlinx.android.synthetic.main.fragment_history.sliding_layout
 import java.time.LocalDate
 import java.time.YearMonth
@@ -164,9 +165,15 @@ class HistoryFragment :
             it?.let { monthsLoaded.add(it) }
         })
 
+        sliding_layout.setScrollableView(scroll_view)
+
         sliding_layout.addPanelSlideListener(object : SlidingUpPanelLayout.PanelSlideListener {
             override fun onPanelSlide(panel: View?, slideOffset: Float) { }
-            override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) {
+            override fun onPanelStateChanged(
+                panel: View?,
+                previousState: SlidingUpPanelLayout.PanelState?,
+                newState: SlidingUpPanelLayout.PanelState?
+            ) {
                 when (newState) {
                     SlidingUpPanelLayout.PanelState.EXPANDED -> {
                         calendarFragment?.showCalendar()
@@ -182,10 +189,12 @@ class HistoryFragment :
     }
 
     private fun navigateToOverview() {
+        sliding_layout.isEnabled = false
         sliding_layout.panelState = SlidingUpPanelLayout.PanelState.COLLAPSED
     }
 
     private fun navigateToCalendar(yearMonth: YearMonth) {
+        sliding_layout.isEnabled = true
         sliding_layout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
 
         // If this month was shown before, make the calendar visible immediately.
