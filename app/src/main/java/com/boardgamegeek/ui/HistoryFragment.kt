@@ -20,15 +20,11 @@ import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.boardgamegeek.BR
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
-import com.boardgamegeek.ui.viewmodel.PlayStatsForMonth
 import com.boardgamegeek.ui.viewmodel.PlaysViewModel
 import com.karumi.weak.weak
 import com.kizitonwose.calendarview.model.CalendarDay
@@ -42,11 +38,10 @@ import kotlinx.android.synthetic.main.calendar_day.view.calendarDayText
 import kotlinx.android.synthetic.main.calendar_header.view.legendLayout
 import kotlinx.android.synthetic.main.fragment_history.history_calendar
 import kotlinx.android.synthetic.main.fragment_history.history_detail
-import kotlinx.android.synthetic.main.fragment_history.history_summary_list
+import kotlinx.android.synthetic.main.fragment_history.history_overview_frame
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.time.temporal.WeekFields
 import java.util.Locale
@@ -55,10 +50,10 @@ interface CalendarViewListener {
     fun onNavigateToOverview()
 }
 
-class CalendarFragment :
+class HistoryFragment :
     Fragment(),
     CalendarViewListener,
-    HistoryListAdapter.Listener,
+    HistoryOverviewAdapter.Listener,
     DayViewContainer.Listener {
 
     private val viewModel by activityViewModels<HistoryViewModel> {
@@ -98,13 +93,13 @@ class CalendarFragment :
         super.onViewCreated(view, savedInstanceState)
 
         navigator = HistoryFragmentNavigator(
-            summaryList = history_summary_list,
+            summaryList = history_overview_frame,
             detail = history_detail,
             calendar = history_calendar,
             animationDuration = resources.getInteger(android.R.integer.config_mediumAnimTime)
         )
 
-        setupHistoryList()
+        setupOverview()
         setupCalendar()
         setupPlaysList()
     }
@@ -164,11 +159,11 @@ class CalendarFragment :
     // Setup
     // ----------------------------
 
-    private fun setupHistoryList() {
-        history_summary_list.also {
-            it.layoutManager = LinearLayoutManager(this.context)
-            it.adapter = HistoryListAdapter(viewModel, viewLifecycleOwner, this)
-        }
+    private fun setupOverview() {
+        childFragmentManager
+            .beginTransaction()
+            .replace(R.id.history_overview_frame, HistoryOverviewFragment(this))
+            .commit()
     }
 
     private fun setupCalendar() {
@@ -209,15 +204,10 @@ class CalendarFragment :
     }
 
     private fun setupPlaysList() {
-
-        val playsFragment = PlaysFragment.newInstanceForDay()
-
         childFragmentManager
             .beginTransaction()
-            .replace(R.id.playsList, playsFragment)
+            .replace(R.id.playsList, PlaysFragment.newInstanceForDay())
             .commit()
-
-//        playsViewModel.setFilter(PlaysViewModel.FilterType.ALL)
     }
 
     // ----------------------------
@@ -313,61 +303,6 @@ class HistoryFragmentNavigator(
                     }
                 }
             })
-    }
-}
-
-class HistoryListAdapter(
-    private val viewModel: HistoryViewModel,
-    private val viewLifecycleOwner: LifecycleOwner,
-    private val listener: Listener?
-) : RecyclerView.Adapter<HistoryListAdapter.ViewHolder>() {
-
-    interface Listener {
-        fun onNavigateToMonth(yearMonth: YearMonth)
-    }
-
-    private var monthCount = 0
-    private val monthTitleFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM")
-
-    init {
-        viewModel
-            .getNumberOfMonthsBetweenFirstPlayAndNow()
-            .observe(viewLifecycleOwner, Observer {
-                if (it != monthCount) {
-                    monthCount = it
-                    notifyDataSetChanged()
-                }
-            })
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val layoutInflater = LayoutInflater.from(parent.context)
-        val binding = DataBindingUtil.inflate<ViewDataBinding>(layoutInflater, viewType, parent, false)
-        binding.lifecycleOwner = viewLifecycleOwner
-        return ViewHolder(binding)
-    }
-
-    override fun getItemViewType(position: Int) = R.layout.fragment_calendar_overview_item
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val yearMonth = YearMonth.now().minusMonths(position.toLong())
-        holder.bind(
-            yearMonth = yearMonth,
-            stats = viewModel.getStatsForMonth(yearMonth)
-        )
-    }
-
-    override fun getItemCount(): Int = monthCount
-
-    inner class ViewHolder(private val binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(yearMonth: YearMonth, stats: LiveData<PlayStatsForMonth>?) {
-            binding.apply {
-                setVariable(BR.listener, listener)
-                setVariable(BR.yearMonth, yearMonth)
-                setVariable(BR.monthString, monthTitleFormatter.format(yearMonth))
-                setVariable(BR.stats, stats)
-            }
-        }
     }
 }
 

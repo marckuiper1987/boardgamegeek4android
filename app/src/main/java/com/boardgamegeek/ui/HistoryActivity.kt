@@ -5,9 +5,9 @@ import com.boardgamegeek.R
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
-class HistoryActivity : TopLevelSinglePaneActivity(), CalendarFragment.Listener {
+class HistoryActivity : TopLevelSinglePaneActivity(), HistoryFragment.Listener {
 
-    override fun onCreatePane(): Fragment = CalendarFragment().also { it.listener = this }
+    override fun onCreatePane(): Fragment = HistoryFragment().also { it.listener = this }
 
     override val navigationItemId: Int = R.id.history
 

@@ -14,12 +14,10 @@
 		android:layout_height="match_parent"
 		android:background="@color/background">
 
-		<androidx.recyclerview.widget.RecyclerView
-			android:id="@+id/history_summary_list"
+		<FrameLayout
+			android:id="@+id/history_overview_frame"
 			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			app:layoutManager="LinearLayoutManager"
-			tools:listitem="@layout/fragment_calendar_overview_item" />
+			android:layout_height="match_parent" />
 
 		<LinearLayout
 			android:id="@+id/history_detail"
