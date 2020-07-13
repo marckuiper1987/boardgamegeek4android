@@ -37,12 +37,12 @@ import java.time.temporal.WeekFields
 import java.util.Locale
 
 class HistoryCalendarFragment(
-    private val listener: Listener,
-    private val dayListener: DayViewContainer.Listener
+    private val listener: Listener? = null
 ) : Fragment() {
 
     interface Listener {
         fun onNavigateToMonth(yearMonth: YearMonth)
+        fun onSelectDate(date: LocalDate)
     }
 
     private val viewModel by activityViewModels<HistoryViewModel> {
@@ -56,6 +56,38 @@ class HistoryCalendarFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setup()
+    }
+
+    private fun setup() {
+
+        val daysOfWeek = daysOfWeekFromLocale()
+        val currentMonth = YearMonth.now()
+        val selectedMonth = viewModel.selectedMonth.value
+
+        // Hide calendar initially. This will speed up navigation to this fragment,
+        // and a placeholder is shown while the calendar is initializing.
+        hideCalendar()
+
+        history_calendar.setup(
+            startMonth = currentMonth.minusMonths(10), //  TODO
+            endMonth = currentMonth.plusMonths(0),
+            firstDayOfWeek = daysOfWeek.first()
+        )
+
+        history_calendar.scrollToMonth(selectedMonth ?: currentMonth)
+
+        setCalendarDayDimensions()
+
+        context?.let { context ->
+            history_calendar.dayBinder = CalendarDayBinder(context, viewLifecycleOwner, viewModel, listener)
+            history_calendar.monthHeaderBinder = CalendarMonthHeaderBinder(daysOfWeek)
+        }
+
+        history_calendar.monthScrollListener = { month ->
+            listener?.onNavigateToMonth(month.yearMonth)
+        }
+
+        // View model listeners
 
         var previousDate: LocalDate? = null
         viewModel.selectedDate.observe(viewLifecycleOwner, Observer { date ->
@@ -69,32 +101,6 @@ class HistoryCalendarFragment(
         })
     }
 
-    private fun setup() {
-
-        val daysOfWeek = daysOfWeekFromLocale()
-        val currentMonth = YearMonth.now()
-        val selectedMonth = viewModel.selectedMonth.value
-
-        history_calendar.setup(
-            startMonth = currentMonth.minusMonths(10), //  TODO
-            endMonth = currentMonth.plusMonths(0),
-            firstDayOfWeek = daysOfWeek.first()
-        )
-
-        history_calendar.scrollToMonth(selectedMonth ?: currentMonth)
-
-        setCalendarDayDimensions()
-
-        context?.also { context ->
-            history_calendar.dayBinder = CalendarDayBinder(context, viewLifecycleOwner, viewModel, dayListener)
-            history_calendar.monthHeaderBinder = CalendarMonthHeaderBinder(daysOfWeek)
-        }
-
-        history_calendar.monthScrollListener = { month ->
-            listener.onNavigateToMonth(month.yearMonth)
-        }
-    }
-
     private fun setCalendarDayDimensions() {
 
         val displayMetrics = DisplayMetrics()
@@ -105,18 +111,22 @@ class HistoryCalendarFragment(
             history_calendar.dayHeight = it + 44 // add height of text box containing day number
         }
     }
+
+    fun showCalendar() {
+        history_calendar.visibility = View.VISIBLE
+    }
+
+    fun hideCalendar() {
+        history_calendar.visibility = View.GONE
+    }
 }
 
-class DayViewContainer(view: View, listener: Listener?) : ViewContainer(view) {
+private class DayViewContainer(view: View, listener: HistoryCalendarFragment.Listener?) : ViewContainer(view) {
     lateinit var day: CalendarDay
 
     val layout: LinearLayout = view.calendarDay
     val textView: TextView = view.calendarDayText
     val frame: FrameLayout = view.calendarDayFrame
-
-    interface Listener {
-        fun onSelectDate(date: LocalDate)
-    }
 
     init {
         view.setOnClickListener {
@@ -129,7 +139,7 @@ private class CalendarDayBinder(
     context: Context,
     viewLifecycleOwner: LifecycleOwner,
     viewModel: HistoryViewModel,
-    listener: DayViewContainer.Listener
+    listener: HistoryCalendarFragment.Listener?
 ): DayBinder<DayViewContainer> {
 
     private val context by weak(context)
