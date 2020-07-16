@@ -1,5 +1,6 @@
 package com.boardgamegeek.ui
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -45,7 +46,7 @@ class HistoryFragment :
 
     private var calendarFragment: HistoryCalendarFragment? = null
 
-    var listener: Listener? = null
+    private var listener: Listener? = null
         set(value) {
             field = value
             value?.onChangeMonth(selectedMonth)
@@ -55,9 +56,13 @@ class HistoryFragment :
     // Fragment events
     // ----------------------------
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        listener = context as Listener
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         requireActivity()
             .onBackPressedDispatcher
             .addCallback(this, backPressedCallback)
@@ -109,13 +114,11 @@ class HistoryFragment :
     }
 
     override fun onNavigateToMonth(yearMonth: YearMonth) {
-        backPressedCallback.isEnabled = true
         navigateToCalendar(yearMonth)
         selectedMonth = yearMonth
     }
 
     override fun onNavigateToOverview() {
-        backPressedCallback.isEnabled = false
         navigateToOverview()
         selectedMonth = null
     }
@@ -133,12 +136,12 @@ class HistoryFragment :
     private fun setupOverview() {
         childFragmentManager
             .beginTransaction()
-            .replace(R.id.history_overview_frame, HistoryOverviewFragment(this))
+            .replace(R.id.history_overview_frame, HistoryOverviewFragment())
             .commit()
     }
 
     private fun setupCalendar() {
-        calendarFragment = HistoryCalendarFragment(this).also {
+        calendarFragment = HistoryCalendarFragment().also {
             childFragmentManager
                 .beginTransaction()
                 .replace(R.id.history_calendar_frame, it)
@@ -166,6 +169,7 @@ class HistoryFragment :
         })
 
         sliding_layout.setScrollableView(scroll_view)
+        sliding_layout.isTouchEnabled = false
 
         sliding_layout.addPanelSlideListener(object : SlidingUpPanelLayout.PanelSlideListener {
             override fun onPanelSlide(panel: View?, slideOffset: Float) { }
@@ -189,12 +193,14 @@ class HistoryFragment :
     }
 
     private fun navigateToOverview() {
-        sliding_layout.isEnabled = false
+        backPressedCallback.isEnabled = false
+        sliding_layout.isTouchEnabled = false
         sliding_layout.panelState = SlidingUpPanelLayout.PanelState.COLLAPSED
     }
 
     private fun navigateToCalendar(yearMonth: YearMonth) {
-        sliding_layout.isEnabled = true
+        backPressedCallback.isEnabled = true
+        sliding_layout.isTouchEnabled = true
         sliding_layout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
 
         // If this month was shown before, make the calendar visible immediately.

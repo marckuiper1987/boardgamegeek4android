@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter
 
 class HistoryActivity : TopLevelSinglePaneActivity(), HistoryFragment.Listener {
 
-    override fun onCreatePane(): Fragment = HistoryFragment().also { it.listener = this }
+    override fun onCreatePane(): Fragment = HistoryFragment()
 
     override val navigationItemId: Int = R.id.history
 

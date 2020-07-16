@@ -1,8 +1,6 @@
 package com.boardgamegeek.ui
 
 import android.content.ContentProviderOperation
-import android.database.DataSetObservable
-import android.database.DataSetObserver
 import android.graphics.Color
 import android.os.Bundle
 import android.util.SparseBooleanArray
@@ -12,7 +10,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ListAdapter
 import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
@@ -35,7 +32,7 @@ import com.boardgamegeek.extensions.fadeOut
 import com.boardgamegeek.extensions.get
 import com.boardgamegeek.extensions.inflate
 import com.boardgamegeek.extensions.setBggColors
-import com.boardgamegeek.extensions.setHeightBasedOnItems
+import com.boardgamegeek.extensions.setHeightBasedOnItemsExcludingDecorations
 import com.boardgamegeek.extensions.setTextOrHide
 import com.boardgamegeek.provider.BggContract.INVALID_ID
 import com.boardgamegeek.provider.BggContract.Plays
@@ -47,13 +44,12 @@ import com.boardgamegeek.ui.viewmodel.PlaysViewModel
 import com.boardgamegeek.ui.widget.RecyclerSectionItemDecoration
 import com.boardgamegeek.util.DateTimeUtils
 import com.boardgamegeek.util.XmlApiMarkupConverter
-import kotlinx.android.synthetic.main.fragment_plays_scrollable.swipeRefreshLayout
 import kotlinx.android.synthetic.main.fragment_plays.emptyContainer
 import kotlinx.android.synthetic.main.fragment_plays.emptyTextView
 import kotlinx.android.synthetic.main.fragment_plays.fabView
-import kotlinx.android.synthetic.main.fragment_plays.listView
 import kotlinx.android.synthetic.main.fragment_plays.progressBar
 import kotlinx.android.synthetic.main.fragment_plays.recyclerView
+import kotlinx.android.synthetic.main.fragment_plays_scrollable.swipeRefreshLayout
 import kotlinx.android.synthetic.main.row_play.view.commentView
 import kotlinx.android.synthetic.main.row_play.view.infoView
 import kotlinx.android.synthetic.main.row_play.view.statusView
@@ -67,9 +63,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.properties.Delegates
 
-open class PlaysFragment(
-    private val renderFixedList: Boolean = false
-) : Fragment(), ActionMode.Callback {
+open class PlaysFragment() : Fragment(), ActionMode.Callback {
     private val viewModel by activityViewModels<PlaysViewModel>()
     private val markupConverter by lazy { XmlApiMarkupConverter(requireContext()) }
 
@@ -87,8 +81,27 @@ open class PlaysFragment(
     private var showGameName = true
     private var isSyncing = false
     private var actionMode: ActionMode? = null
+    private var renderFixedList: Boolean = false
+    private var showProgressBar: Boolean = true
+    private var showItemDecoration = true
+    @ColorInt private var iconColor: Int? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+
+        emptyStringResId = arguments?.getInt(KEY_EMPTY_STRING_RES_ID, R.string.empty_plays)
+            ?: R.string.empty_plays
+        showGameName = arguments?.getBoolean(KEY_SHOW_GAME_NAME, true) ?: true
+        gameId = arguments?.getInt(KEY_GAME_ID, INVALID_ID) ?: INVALID_ID
+        gameName = arguments?.getString(KEY_GAME_NAME)
+        thumbnailUrl = arguments?.getString(KEY_THUMBNAIL_URL)
+        imageUrl = arguments?.getString(KEY_IMAGE_URL)
+        heroImageUrl = arguments?.getString(KEY_HERO_IMAGE_URL)
+        arePlayersCustomSorted = arguments?.getBoolean(KEY_CUSTOM_PLAYER_SORT) ?: false
+        iconColor = arguments?.getInt(KEY_ICON_COLOR, Color.TRANSPARENT) ?: Color.TRANSPARENT
+        renderFixedList = arguments?.getBoolean(KEY_FIXED_LIST) ?: false
+        showProgressBar = arguments?.getBoolean(KEY_SHOW_PROGRESS_BAR) ?: true
+        showItemDecoration = arguments?.getBoolean(KEY_SHOW_ITEM_DECORATION, true) ?: true
+
         return inflater.inflate(
             if (renderFixedList) R.layout.fragment_plays else R.layout.fragment_plays_scrollable,
             container,
@@ -98,37 +111,27 @@ open class PlaysFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Remove either the recyclerView or listView from view
-        if (renderFixedList) {
-            (recyclerView.parent as ViewGroup).removeView(recyclerView)
-            listView.adapter = adapter
-            listView.setHeightBasedOnItems()
-        }
-        else {
-            (recyclerView.parent as ViewGroup).removeView(listView)
-            recyclerView.setHasFixedSize(true)
-            recyclerView.adapter = adapter
-        }
+        recyclerView.setHasFixedSize(true)
+        recyclerView.adapter = adapter
 
         viewModel.plays.observe(viewLifecycleOwner, Observer {
-            progressBar.isVisible = it.status == Status.REFRESHING
+            progressBar.isVisible = it.status == Status.REFRESHING && showProgressBar
             adapter.items = it.data ?: emptyList()
-            val sectionItemDecoration = RecyclerSectionItemDecoration(
-                resources.getDimensionPixelSize(R.dimen.recycler_section_header_height),
-                adapter
-            )
-            while (recyclerView.itemDecorationCount > 0) {
-                recyclerView.removeItemDecorationAt(0)
+            if (showItemDecoration) {
+                val sectionItemDecoration = RecyclerSectionItemDecoration(
+                    resources.getDimensionPixelSize(R.dimen.recycler_section_header_height),
+                    adapter
+                )
+                while (recyclerView.itemDecorationCount > 0) {
+                    recyclerView.removeItemDecorationAt(0)
+                }
+                recyclerView.addItemDecoration(sectionItemDecoration)
             }
-            recyclerView.addItemDecoration(sectionItemDecoration)
             if (it.data.isNullOrEmpty()) {
                 emptyContainer.fadeIn()
-                if (renderFixedList) listView.fadeOut()
-                else recyclerView.fadeOut()
+                recyclerView.fadeOut()
             } else {
-                if (renderFixedList) listView.fadeIn()
-                else recyclerView.fadeIn()
+                recyclerView.fadeIn()
                 emptyContainer.fadeOut()
             }
         })
@@ -165,20 +168,8 @@ open class PlaysFragment(
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        emptyStringResId = arguments?.getInt(KEY_EMPTY_STRING_RES_ID, R.string.empty_plays)
-                ?: R.string.empty_plays
-        showGameName = arguments?.getBoolean(KEY_SHOW_GAME_NAME, true) ?: true
-        gameId = arguments?.getInt(KEY_GAME_ID, INVALID_ID) ?: INVALID_ID
-        gameName = arguments?.getString(KEY_GAME_NAME)
-        thumbnailUrl = arguments?.getString(KEY_THUMBNAIL_URL)
-        imageUrl = arguments?.getString(KEY_IMAGE_URL)
-        heroImageUrl = arguments?.getString(KEY_HERO_IMAGE_URL)
-        arePlayersCustomSorted = arguments?.getBoolean(KEY_CUSTOM_PLAYER_SORT) ?: false
-        @ColorInt val iconColor = arguments?.getInt(KEY_ICON_COLOR, Color.TRANSPARENT)
-                ?: Color.TRANSPARENT
-
         if (gameId != INVALID_ID) {
-            fabView.colorize(iconColor)
+            iconColor?.let { fabView.colorize(it) }
             fabView.setOnClickListener {
                 LogPlayActivity.logPlay(context, gameId, gameName, thumbnailUrl, imageUrl, heroImageUrl, arePlayersCustomSorted)
             }
@@ -224,7 +215,7 @@ open class PlaysFragment(
         viewModel.refresh()
     }
 
-    internal inner class PlayAdapter : ListAdapter, RecyclerView.Adapter<PlayAdapter.ViewHolder>(), AutoUpdatableAdapter, RecyclerSectionItemDecoration.SectionCallback {
+    internal inner class PlayAdapter : RecyclerView.Adapter<PlayAdapter.ViewHolder>(), AutoUpdatableAdapter, RecyclerSectionItemDecoration.SectionCallback {
         private val selectedItems = SparseBooleanArray()
 
         val selectedItemCount: Int
@@ -242,29 +233,17 @@ open class PlaysFragment(
         }
 
         var items: List<PlayEntity> by Delegates.observable(emptyList()) { _, old, new ->
+            autoNotify(old, new) { o, n ->
+                o.internalId == n.internalId
+            }
             if (renderFixedList) {
-                notifyDataSetChangedOverride()
-            }
-            else {
-                autoNotify(old, new) { o, n ->
-                    o.internalId == n.internalId
-                }
+                recyclerView.setHeightBasedOnItemsExcludingDecorations()
             }
         }
 
-        private fun notifyDataSetChangedOverride() {
-            notifyDataSetChanged() // Stupid final function >:-(
-            datasetObservervable.notifyChanged()
-            listView.setHeightBasedOnItems()
-        }
-
-        override fun getItem(position: Int): PlayEntity? {
+        fun getItem(position: Int): PlayEntity? {
             return items.getOrNull(position)
         }
-
-        override fun getViewTypeCount(): Int = 1
-        override fun isEnabled(position: Int): Boolean = true
-        override fun areAllItemsEnabled(): Boolean = true
 
         fun areAllSelectedItemsPending(): Boolean {
             return selectedItemPositions
@@ -279,7 +258,7 @@ open class PlaysFragment(
             } else {
                 selectedItems.put(position, true)
             }
-            notifyDataSetChangedOverride() // I'd prefer to call notifyItemChanged(position), but that causes the section header to appear briefly
+            notifyDataSetChanged() // I'd prefer to call notifyItemChanged(position), but that causes the section header to appear briefly
             actionMode?.let {
                 if (selectedItemCount == 0) {
                     it.finish()
@@ -291,12 +270,10 @@ open class PlaysFragment(
 
         fun clearSelection() {
             selectedItems.clear()
-            notifyDataSetChangedOverride()
+            notifyDataSetChanged()
         }
 
         override fun getItemCount() = items.size
-        override fun getCount(): Int = items.size
-        override fun isEmpty(): Boolean = items.isEmpty()
 
         override fun getItemId(position: Int) = getItem(position)?.internalId ?: RecyclerView.NO_ID
 
@@ -304,12 +281,6 @@ open class PlaysFragment(
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             holder.bind(getItem(position), position)
-        }
-
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            val viewHolder = onCreateViewHolder(parent, 1)
-            onBindViewHolder(viewHolder, position)
-            return viewHolder.itemView
         }
 
         internal inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -389,14 +360,6 @@ open class PlaysFragment(
                     }
                 }
             }
-        }
-
-        private var datasetObservervable = DataSetObservable()
-        override fun registerDataSetObserver(observer: DataSetObserver?) {
-            datasetObservervable.registerObserver(observer)
-        }
-        override fun unregisterDataSetObserver(observer: DataSetObserver?) {
-            datasetObservervable.unregisterObserver(observer)
         }
     }
 
@@ -483,6 +446,9 @@ open class PlaysFragment(
         private const val KEY_ICON_COLOR = "ICON_COLOR"
         private const val KEY_EMPTY_STRING_RES_ID = "EMPTY_STRING_RES_ID"
         private const val KEY_SHOW_GAME_NAME = "SHOW_GAME_NAME"
+        private const val KEY_SHOW_PROGRESS_BAR = "SHOW_PROGRESS_BAR"
+        private const val KEY_SHOW_ITEM_DECORATION = "SHOW_ITEM_DECORATION"
+        private const val KEY_FIXED_LIST = "FIXED_LIST"
 
         fun newInstance(): PlaysFragment {
             return PlaysFragment().withArguments(
@@ -525,8 +491,13 @@ open class PlaysFragment(
         }
 
         fun newInstanceForDay(): PlaysFragment {
-            return PlaysFragment(true).apply {
-                arguments = bundleOf(KEY_EMPTY_STRING_RES_ID to R.string.empty_plays_day)
+            return PlaysFragment().apply {
+                arguments = bundleOf(
+                    KEY_EMPTY_STRING_RES_ID to R.string.empty_plays_day,
+                    KEY_FIXED_LIST to true,
+                    KEY_SHOW_PROGRESS_BAR to false,
+                    KEY_SHOW_ITEM_DECORATION to false
+                )
             }
         }
     }

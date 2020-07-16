@@ -36,17 +36,22 @@ import java.time.format.TextStyle
 import java.time.temporal.WeekFields
 import java.util.Locale
 
-class HistoryCalendarFragment(
-    private val listener: Listener? = null
-) : Fragment() {
+class HistoryCalendarFragment : Fragment() {
 
     interface Listener {
         fun onNavigateToMonth(yearMonth: YearMonth)
         fun onSelectDate(date: LocalDate)
     }
 
+    private lateinit var listener: Listener
+
     private val viewModel by activityViewModels<HistoryViewModel> {
         HistoryViewModelFactory(requireActivity().application, viewLifecycleOwner)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        listener = parentFragment as Listener
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -84,7 +89,7 @@ class HistoryCalendarFragment(
         }
 
         history_calendar.monthScrollListener = { month ->
-            listener?.onNavigateToMonth(month.yearMonth)
+            listener.onNavigateToMonth(month.yearMonth)
         }
 
         // View model listeners

@@ -1,5 +1,6 @@
 package com.boardgamegeek.ui
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -22,12 +23,17 @@ import kotlinx.android.synthetic.main.fragment_history_overview.history_overview
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
-class HistoryOverviewFragment(
-    private val listener: HistoryOverviewAdapter.Listener
-) : Fragment() {
+class HistoryOverviewFragment : Fragment() {
+
+    private lateinit var listener: HistoryOverviewAdapter.Listener
 
     private val viewModel by activityViewModels<HistoryViewModel> {
         HistoryViewModelFactory(requireActivity().application, viewLifecycleOwner)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        listener = parentFragment as HistoryOverviewAdapter.Listener
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
