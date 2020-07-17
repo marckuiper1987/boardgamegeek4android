@@ -84,6 +84,7 @@ open class PlaysFragment() : Fragment(), ActionMode.Callback {
     private var renderFixedList: Boolean = false
     private var showProgressBar: Boolean = true
     private var showItemDecoration = true
+    private var showEmptyMessage = true
     @ColorInt private var iconColor: Int? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -101,6 +102,7 @@ open class PlaysFragment() : Fragment(), ActionMode.Callback {
         renderFixedList = arguments?.getBoolean(KEY_FIXED_LIST) ?: false
         showProgressBar = arguments?.getBoolean(KEY_SHOW_PROGRESS_BAR) ?: true
         showItemDecoration = arguments?.getBoolean(KEY_SHOW_ITEM_DECORATION, true) ?: true
+        showEmptyMessage = arguments?.getBoolean(KEY_SHOW_EMPTY_MESSAGE, true) ?: true
 
         return inflater.inflate(
             if (renderFixedList) R.layout.fragment_plays else R.layout.fragment_plays_scrollable,
@@ -127,12 +129,14 @@ open class PlaysFragment() : Fragment(), ActionMode.Callback {
                 }
                 recyclerView.addItemDecoration(sectionItemDecoration)
             }
-            if (it.data.isNullOrEmpty()) {
-                emptyContainer.fadeIn()
-                recyclerView.fadeOut()
-            } else {
-                recyclerView.fadeIn()
-                emptyContainer.fadeOut()
+            if (showEmptyMessage) {
+                if (it.data.isNullOrEmpty()) {
+                    emptyContainer.fadeIn()
+                    recyclerView.fadeOut()
+                } else {
+                    recyclerView.fadeIn()
+                    emptyContainer.fadeOut()
+                }
             }
         })
 
@@ -448,6 +452,7 @@ open class PlaysFragment() : Fragment(), ActionMode.Callback {
         private const val KEY_SHOW_GAME_NAME = "SHOW_GAME_NAME"
         private const val KEY_SHOW_PROGRESS_BAR = "SHOW_PROGRESS_BAR"
         private const val KEY_SHOW_ITEM_DECORATION = "SHOW_ITEM_DECORATION"
+        private const val KEY_SHOW_EMPTY_MESSAGE = "SHOW_EMPTY_MESSAGE"
         private const val KEY_FIXED_LIST = "FIXED_LIST"
 
         fun newInstance(): PlaysFragment {
@@ -496,7 +501,8 @@ open class PlaysFragment() : Fragment(), ActionMode.Callback {
                     KEY_EMPTY_STRING_RES_ID to R.string.empty_plays_day,
                     KEY_FIXED_LIST to true,
                     KEY_SHOW_PROGRESS_BAR to false,
-                    KEY_SHOW_ITEM_DECORATION to false
+                    KEY_SHOW_ITEM_DECORATION to false,
+                    KEY_SHOW_EMPTY_MESSAGE to false
                 )
             }
         }

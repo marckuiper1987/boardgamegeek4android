@@ -47,12 +47,26 @@
 
 					<!-- PlaysFragment -->
 					<FrameLayout
-						android:id="@+id/playsList"
+						android:id="@+id/history_plays_frame"
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content" />
 
 				</LinearLayout>
 			</ScrollView>
+
+			<LinearLayout
+				android:id="@+id/empty_layout"
+				android:layout_width="match_parent"
+				android:layout_height="150dp"
+				android:gravity="center">
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:gravity="center"
+					android:text="@string/empty_no_selected_day" />
+
+			</LinearLayout>
 
 			<LinearLayout
 				android:layout_width="match_parent"

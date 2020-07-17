@@ -6,14 +6,23 @@
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content">
 
-	<FrameLayout
+	<!-- Placeholder -->
+	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:background="@color/light_blue"
-		android:paddingTop="7dp"
-		android:paddingBottom="7dp">
-		<include layout="@layout/calendar_header" />
-	</FrameLayout>
+		android:orientation="vertical">
+		<FrameLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:background="@color/light_blue"
+			android:paddingTop="7dp"
+			android:paddingBottom="7dp">
+			<include layout="@layout/calendar_header" />
+		</FrameLayout>
+		<com.boardgamegeek.ui.HistoryCalendarPlaceholder
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" />
+	</LinearLayout>
 
 	<com.kizitonwose.calendarview.CalendarView
 		android:id="@+id/history_calendar"

@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
@@ -13,10 +14,14 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import com.boardgamegeek.BR
 import com.boardgamegeek.R
+import com.boardgamegeek.extensions.fadeIn
+import com.boardgamegeek.extensions.fadeOut
 import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
 import com.boardgamegeek.ui.viewmodel.PlaysViewModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
+import kotlinx.android.synthetic.main.fragment_history.empty_layout
+import kotlinx.android.synthetic.main.fragment_history.history_plays_frame
 import kotlinx.android.synthetic.main.fragment_history.scroll_view
 import kotlinx.android.synthetic.main.fragment_history.sliding_layout
 import java.time.LocalDate
@@ -95,9 +100,11 @@ class HistoryFragment :
 
     private var selectedDate: LocalDate? = null
         set(date) {
+            val oldDate = field
             field = date
             viewModel.selectedDate.value = date
             playsViewModel.setDate(date.toString())
+            switchPlaysListVisibility(oldDate, date)
         }
 
     private var selectedMonth: YearMonth? = null
@@ -110,7 +117,7 @@ class HistoryFragment :
         }
 
     override fun onSelectDate(date: LocalDate) {
-        selectedDate = date
+        selectedDate = if (date != selectedDate) date else null
     }
 
     override fun onNavigateToMonth(yearMonth: YearMonth) {
@@ -152,7 +159,7 @@ class HistoryFragment :
     private fun setupPlaysList() {
         childFragmentManager
             .beginTransaction()
-            .replace(R.id.playsList, PlaysFragment.newInstanceForDay())
+            .replace(R.id.history_plays_frame, PlaysFragment.newInstanceForDay())
             .commit()
     }
 
@@ -167,6 +174,8 @@ class HistoryFragment :
         viewModel.selectedMonth.observe(viewLifecycleOwner, Observer {
             it?.let { monthsLoaded.add(it) }
         })
+
+        history_plays_frame.isVisible = false
 
         sliding_layout.setScrollableView(scroll_view)
         sliding_layout.isTouchEnabled = false
@@ -207,6 +216,17 @@ class HistoryFragment :
         // Otherwise, it is made visible after panel has finished sliding up.
         if (monthsLoaded.contains(yearMonth)) {
             calendarFragment?.showCalendar()
+        }
+    }
+
+    private fun switchPlaysListVisibility(oldDate: LocalDate?, date: LocalDate?) {
+        if (oldDate == null && date != null) {
+            empty_layout.fadeOut()
+            history_plays_frame.fadeIn()
+        }
+        else if (date == null && oldDate != null) {
+            history_plays_frame.fadeOut()
+            empty_layout.fadeIn()
         }
     }
 }

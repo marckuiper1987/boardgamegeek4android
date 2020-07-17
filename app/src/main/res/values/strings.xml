@@ -274,10 +274,11 @@
 	<string name="empty_plays_location">You haven\'t logged any plays at this location.</string>
 	<string name="empty_plays_game">You haven\'t logged any plays of this game.</string>
 	<string name="empty_plays_draft">You have no plays you\'re working on.</string>
-	<string name="empty_plays_day">You haven\'t logged any plays on this day.</string>
 	<string name="empty_plays_pending">No plays are waiting to be sent to the \'Geek.</string>
 	<string name="empty_play_stats">You have no plays that can be analyzed.</string>
 	<string name="empty_play">No play found (ID=%s)."</string>
+	<string name="empty_plays_day">You haven\'t logged any plays on this day.</string>
+	<string name="empty_no_selected_day">Select a day to view play details.</string>
 	<string name="empty_geeklists">Error loading GeekLists.</string>
 	<string name="empty_forums">No forums.</string>
 	<string name="empty_forum">No threads in this forum.</string>
