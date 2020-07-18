@@ -278,7 +278,6 @@
 	<string name="empty_play_stats">You have no plays that can be analyzed.</string>
 	<string name="empty_play">No play found (ID=%s)."</string>
 	<string name="empty_plays_day">You haven\'t logged any plays on this day.</string>
-	<string name="empty_no_selected_day">Select a day to view play details.</string>
 	<string name="empty_geeklists">Error loading GeekLists.</string>
 	<string name="empty_forums">No forums.</string>
 	<string name="empty_forum">No threads in this forum.</string>

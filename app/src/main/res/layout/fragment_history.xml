@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:tools="http://schemas.android.com/tools"
 	xmlns:sothree="http://schemas.android.com/apk/res-auto">
 
 	<data>
 		<variable name="viewModel" type="com.boardgamegeek.ui.viewmodel.HistoryViewModel" />
-		<variable name="listener" type="com.boardgamegeek.ui.CalendarViewListener" />
 	</data>
 
 	<com.sothree.slidinguppanel.SlidingUpPanelLayout
@@ -22,85 +20,37 @@
 			android:layout_width="match_parent"
 			android:layout_height="match_parent" />
 
-		<LinearLayout
-			android:id="@+id/history_detail"
-			android:orientation="vertical"
+		<ScrollView
+			android:id="@+id/scroll_view"
 			android:layout_width="match_parent"
-			android:layout_height="match_parent">
-
-			<ScrollView
-				android:id="@+id/scroll_view"
-				android:layout_width="match_parent"
-				android:layout_height="0dp"
-				android:layout_weight="1">
-
-				<LinearLayout
-					android:orientation="vertical"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content">
-
-					<!-- HistoryCalendarFragment -->
-					<FrameLayout
-						android:id="@+id/history_calendar_frame"
-						android:layout_width="match_parent"
-						android:layout_height="wrap_content" />
-
-					<!-- PlaysFragment -->
-					<FrameLayout
-						android:id="@+id/history_plays_frame"
-						android:layout_width="match_parent"
-						android:layout_height="wrap_content" />
-
-				</LinearLayout>
-			</ScrollView>
+			android:layout_height="match_parent"
+			android:fillViewport="true">
 
 			<LinearLayout
-				android:id="@+id/empty_layout"
+				android:orientation="vertical"
 				android:layout_width="match_parent"
-				android:layout_height="150dp"
-				android:gravity="center">
+				android:layout_height="wrap_content">
 
-				<TextView
+				<!-- HistoryCalendarFragment -->
+				<FrameLayout
+					android:id="@+id/history_calendar_frame"
 					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:gravity="center"
-					android:text="@string/empty_no_selected_day" />
+					android:layout_height="wrap_content" />
+
+				<!-- HistoryPlayStatsFragment -->
+				<FrameLayout
+					android:id="@+id/history_play_stats_frame"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:layout_weight="1" />
+
+				<!-- PlaysFragment -->
+				<FrameLayout
+					android:id="@+id/history_plays_frame"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content" />
 
 			</LinearLayout>
-
-			<LinearLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:background="@color/light_blue"
-				android:onClick="@{() -> listener.onNavigateToOverview()}">
-
-				<TextView
-					android:id="@+id/item_number"
-					android:layout_width="0dp"
-					android:layout_height="wrap_content"
-					android:layout_weight="1"
-					android:layout_margin="10dp"
-					android:textAppearance="?attr/textAppearanceListItem"
-					android:gravity="center"
-					android:textAlignment="center"
-					android:text="@{String.valueOf(viewModel.selectedMonthStats.gamesPlayed) + ` games`}"
-					tools:text="123 games"
-					tools:ignore="NestedWeights" />
-
-				<TextView
-					android:id="@+id/content"
-					android:layout_width="0dp"
-					android:layout_height="wrap_content"
-					android:layout_weight="1"
-					android:layout_margin="10dp"
-					android:textAppearance="?attr/textAppearanceListItem"
-					android:gravity="center"
-					android:textAlignment="center"
-					android:text="@{String.valueOf(viewModel.selectedMonthStats.numberOfPlays) + ` plays`}"
-					tools:text="123 plays" />
-
-			</LinearLayout>
-
-		</LinearLayout>
+		</ScrollView>
 	</com.sothree.slidinguppanel.SlidingUpPanelLayout>
 </layout>

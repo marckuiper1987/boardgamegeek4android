@@ -20,20 +20,15 @@ import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
 import com.boardgamegeek.ui.viewmodel.PlaysViewModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
-import kotlinx.android.synthetic.main.fragment_history.empty_layout
+import kotlinx.android.synthetic.main.fragment_history.history_play_stats_frame
 import kotlinx.android.synthetic.main.fragment_history.history_plays_frame
 import kotlinx.android.synthetic.main.fragment_history.scroll_view
 import kotlinx.android.synthetic.main.fragment_history.sliding_layout
 import java.time.LocalDate
 import java.time.YearMonth
 
-interface CalendarViewListener {
-    fun onNavigateToOverview()
-}
-
 class HistoryFragment :
     Fragment(),
-    CalendarViewListener,
     HistoryOverviewAdapter.Listener,
     HistoryCalendarFragment.Listener {
 
@@ -46,8 +41,6 @@ class HistoryFragment :
     }
 
     private val playsViewModel by activityViewModels<PlaysViewModel>()
-
-    private var binding: ViewDataBinding? = null
 
     private var calendarFragment: HistoryCalendarFragment? = null
 
@@ -80,8 +73,6 @@ class HistoryFragment :
             .also {
                 it.lifecycleOwner = this
                 it.setVariable(BR.viewModel, viewModel)
-                it.setVariable(BR.listener, this)
-                binding = it
             }
             .root
 
@@ -90,6 +81,7 @@ class HistoryFragment :
 
         setupOverview()
         setupCalendar()
+        setupPlayStats()
         setupPlaysList()
         setupNavigation()
     }
@@ -125,14 +117,10 @@ class HistoryFragment :
         selectedMonth = yearMonth
     }
 
-    override fun onNavigateToOverview() {
-        navigateToOverview()
-        selectedMonth = null
-    }
-
     private val backPressedCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
-            onNavigateToOverview()
+            navigateToOverview()
+            selectedMonth = null
         }
     }
 
@@ -154,6 +142,13 @@ class HistoryFragment :
                 .replace(R.id.history_calendar_frame, it)
                 .commit()
         }
+    }
+
+    private fun setupPlayStats() {
+        childFragmentManager
+            .beginTransaction()
+            .replace(R.id.history_play_stats_frame, HistoryPlayStatsFragment())
+            .commit()
     }
 
     private fun setupPlaysList() {
@@ -221,12 +216,12 @@ class HistoryFragment :
 
     private fun switchPlaysListVisibility(oldDate: LocalDate?, date: LocalDate?) {
         if (oldDate == null && date != null) {
-            empty_layout.fadeOut()
+            history_play_stats_frame.fadeOut()
             history_plays_frame.fadeIn()
         }
         else if (date == null && oldDate != null) {
             history_plays_frame.fadeOut()
-            empty_layout.fadeIn()
+            history_play_stats_frame.fadeIn()
         }
     }
 }
