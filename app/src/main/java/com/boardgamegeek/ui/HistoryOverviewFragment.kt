@@ -25,7 +25,11 @@ import java.time.format.DateTimeFormatter
 
 class HistoryOverviewFragment : Fragment() {
 
-    private lateinit var listener: HistoryOverviewAdapter.Listener
+    interface Listener {
+        fun onNavigateToMonth(yearMonth: YearMonth)
+    }
+
+    private lateinit var listener: Listener
 
     private val viewModel by activityViewModels<HistoryViewModel> {
         HistoryViewModelFactory(requireActivity().application, viewLifecycleOwner)
@@ -33,7 +37,7 @@ class HistoryOverviewFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        listener = parentFragment as HistoryOverviewAdapter.Listener
+        listener = parentFragment as Listener
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -56,15 +60,10 @@ class HistoryOverviewFragment : Fragment() {
 class HistoryOverviewAdapter(
     private val viewModel: HistoryViewModel,
     private val viewLifecycleOwner: LifecycleOwner,
-    private val listener: Listener?
+    private val listener: HistoryOverviewFragment.Listener?
 ) : RecyclerView.Adapter<HistoryOverviewAdapter.ViewHolder>() {
 
-    interface Listener {
-        fun onNavigateToMonth(yearMonth: YearMonth)
-    }
-
     private var monthCount = 0
-    private val monthTitleFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM")
 
     init {
         viewModel
@@ -99,10 +98,9 @@ class HistoryOverviewAdapter(
     inner class ViewHolder(private val binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(yearMonth: YearMonth, stats: LiveData<PlayStatsForMonth>?) {
             binding.apply {
+                setVariable(BR.viewModel, viewModel)
                 setVariable(BR.listener, listener)
                 setVariable(BR.yearMonth, yearMonth)
-                setVariable(BR.monthString, monthTitleFormatter.format(yearMonth))
-                setVariable(BR.stats, stats)
             }
         }
     }

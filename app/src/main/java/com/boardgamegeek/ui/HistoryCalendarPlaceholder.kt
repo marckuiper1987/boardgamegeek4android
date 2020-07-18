@@ -8,10 +8,10 @@ import android.util.AttributeSet
 import android.view.View
 import com.boardgamegeek.R
 
-const val weekDays = 7
-const val numWeeks = 6
-const val titleHeight = 44
-const val widthMargin = 2
+private const val weekDays = 7
+private const val numWeeks = 6
+private const val titleHeight = 44
+private const val widthMargin = 2
 
 class HistoryCalendarPlaceholder(context: Context, attrs: AttributeSet) : View(context, attrs) {
 

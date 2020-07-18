@@ -6,6 +6,9 @@ import androidx.annotation.StringRes
 import com.boardgamegeek.R
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -45,3 +48,9 @@ fun Long.asDateForApi(): String {
     c.timeInMillis = this
     return FORMAT_API.format(c.time)
 }
+
+fun Long.toZonedDateTime(): ZonedDateTime =
+    ZonedDateTime.ofInstant(Date(this).toInstant(), ZoneId.systemDefault())
+
+fun Long.toLocalDate(): LocalDate =
+    toZonedDateTime().toLocalDate()

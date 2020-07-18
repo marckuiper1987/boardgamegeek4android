@@ -12,6 +12,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.entities.CollectionItemEntity
 import com.boardgamegeek.entities.PlayEntity
 import com.boardgamegeek.entities.RefreshableResource
+import com.boardgamegeek.extensions.toLocalDate
+import com.boardgamegeek.extensions.toZonedDateTime
 import com.boardgamegeek.repository.GameCollectionRepository
 import com.boardgamegeek.repository.PlayRepository
 import java.time.Instant
@@ -19,6 +21,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Date
 
@@ -40,6 +43,8 @@ class HistoryViewModel(
     private val playRepository = PlayRepository(getApplication())
     private val gameCollectionRepository = GameCollectionRepository(getApplication())
 
+    private val monthNameFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM")
+
     private val firstPlay: LiveData<RefreshableResource<List<PlayEntity>>>
     private val playsByMonth = mutableMapOf<YearMonth, LiveData<RefreshableResource<List<PlayEntity>>>>()
     private val games = mutableMapOf<Int, MutableLiveData<CollectionItemEntity>>()
@@ -54,9 +59,7 @@ class HistoryViewModel(
 
     private val firstMonth = Transformations.map(firstPlay) { refreshable ->
         refreshable.data?.firstOrNull()?.let {
-            YearMonth.from(
-                ZonedDateTime.ofInstant(Date(it.dateInMillis).toInstant(), ZoneId.systemDefault())
-            )
+            YearMonth.from(it.dateInMillis.toZonedDateTime())
         }
     }
 
@@ -85,6 +88,11 @@ class HistoryViewModel(
                     })
             }
         )
+
+    fun getPlaysByDayForMonth(yearMonth: YearMonth) =
+        Transformations.map(getMonthLiveData(yearMonth)) { plays ->
+            plays.data?.groupBy { it.dateInMillis.toLocalDate() }
+        }
 
     fun getPlaysForDay(date: LocalDate) =
         Transformations.map(getMonthLiveData(YearMonth.from(date))) { plays ->
@@ -121,6 +129,8 @@ class HistoryViewModel(
                 )
             }
         }
+
+    fun getNameForMonth(yearMonth: YearMonth) = monthNameFormatter.format(yearMonth)
 }
 
 data class PlayStatsForMonth(

@@ -29,7 +29,7 @@ import java.time.YearMonth
 
 class HistoryFragment :
     Fragment(),
-    HistoryOverviewAdapter.Listener,
+    HistoryOverviewFragment.Listener,
     HistoryCalendarFragment.Listener {
 
     interface Listener {
