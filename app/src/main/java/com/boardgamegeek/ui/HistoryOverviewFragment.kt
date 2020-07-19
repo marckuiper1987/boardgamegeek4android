@@ -62,11 +62,11 @@ class HistoryOverviewAdapter(
     private val listener: HistoryOverviewFragment.Listener?
 ) : RecyclerView.Adapter<HistoryOverviewAdapter.ViewHolder>() {
 
-    private var monthCount = 0
+    private var monthCount = 0L
 
     init {
         viewModel
-            .getNumberOfMonthsBetweenFirstPlayAndNow()
+            .numberOfMonthsBetweenFirstPlayAndNow
             .observe(viewLifecycleOwner, Observer {
                 if (it != monthCount) {
                     monthCount = it
@@ -93,7 +93,7 @@ class HistoryOverviewAdapter(
         holder.unbind()
     }
 
-    override fun getItemCount(): Int = monthCount
+    override fun getItemCount(): Int = monthCount.toInt()
 
     inner class ViewHolder(private val binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(yearMonth: YearMonth) {
