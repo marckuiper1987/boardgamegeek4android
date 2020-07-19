@@ -121,7 +121,10 @@ class PlayDao(private val context: BggApplication) {
     fun loadOldestPlay(): LiveData<List<PlayEntity>> {
         val uri = Plays.CONTENT_URI
         return RegisteredLiveData(context, uri, false) {
-            loadPlays(uri, fetch = PlaysFetch.MIN)
+            if (context.contentResolver.rowExists(uri))
+                loadPlays(uri, fetch = PlaysFetch.MIN)
+            else
+                emptyList<PlayEntity>()
         }
     }
 

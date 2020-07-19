@@ -13,25 +13,22 @@ import com.boardgamegeek.entities.CollectionItemEntity
 import com.boardgamegeek.entities.PlayEntity
 import com.boardgamegeek.entities.RefreshableResource
 import com.boardgamegeek.extensions.toLocalDate
-import com.boardgamegeek.extensions.toZonedDateTime
 import com.boardgamegeek.repository.GameCollectionRepository
 import com.boardgamegeek.repository.PlayRepository
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.util.Date
 
 class HistoryViewModelFactory(
     private val application: Application,
-    private val lifecycleOwner: LifecycleOwner
+    private val viewLifecycleOwner: LifecycleOwner
 ): ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return HistoryViewModel(application, lifecycleOwner) as T
+        return HistoryViewModel(application, viewLifecycleOwner) as T
     }
 }
 
@@ -59,42 +56,47 @@ class HistoryViewModel(
 
     private val firstMonth = Transformations.map(firstPlay) { refreshable ->
         refreshable.data?.firstOrNull()?.let {
-            YearMonth.from(it.dateInMillis.toZonedDateTime())
+            YearMonth.from(it.dateInMillis.toLocalDate())
         }
     }
 
     private fun getMonthLiveData(yearMonth: YearMonth) =
-        playsByMonth.getOrPut(yearMonth) {
-            playRepository
-                .loadPlaysByYearMonth(yearMonth)
-                .also { data ->
-                    data.observe(viewLifecycleOwner, Observer { plays ->
-                        plays.data?.forEach { play ->
-                            putGameLiveData(play.gameId)
-                        }
-                    })
-                }
+//        MutableLiveData<RefreshableResource<List<PlayEntity>>>()
+        synchronized(yearMonth) {
+            playsByMonth.getOrPut(yearMonth) {
+                playRepository
+                    .loadPlaysByYearMonth(yearMonth)
+//                    .also { data ->
+//                        data.observe(viewLifecycleOwner, Observer { plays ->
+//                            plays.data?.forEach { play ->
+//                                putGameLiveData(play.gameId)
+//                            }
+//                        })
+//                    }
+            }
         }
 
     private fun putGameLiveData(gameId: Int) =
-        games.putIfAbsent(gameId,
-            MutableLiveData<CollectionItemEntity>().also {
-                gameCollectionRepository
-                    .getCollectionItems(gameId, allowRefresh = false)
-                    .observe(viewLifecycleOwner, Observer { items ->
-                        if (items.data != null) {
-                            games[gameId]?.value = items.data.firstOrNull()
-                        }
-                    })
-            }
-        )
+        synchronized(gameId) {
+            games.putIfAbsent(gameId,
+                MutableLiveData<CollectionItemEntity>().also {
+                    gameCollectionRepository
+                        .getCollectionItems(gameId, allowRefresh = false)
+                        .observe(viewLifecycleOwner, Observer { items ->
+                            if (items.data != null) {
+                                games[gameId]?.value = items.data.firstOrNull()
+                            }
+                        })
+                }
+            )
+        }
 
     fun getPlaysByDayForMonth(yearMonth: YearMonth) =
         Transformations.map(getMonthLiveData(yearMonth)) { plays ->
             plays.data?.groupBy { it.dateInMillis.toLocalDate() }
         }
 
-    fun getPlaysForDay(date: LocalDate) =
+    private fun getPlaysForDay(date: LocalDate) =
         Transformations.map(getMonthLiveData(YearMonth.from(date))) { plays ->
             plays.data?.filter {
                 val playDate = Instant.ofEpochMilli(it.dateInMillis).atZone(ZoneId.systemDefault()).toLocalDate()
@@ -130,7 +132,7 @@ class HistoryViewModel(
             }
         }
 
-    fun getNameForMonth(yearMonth: YearMonth) = monthNameFormatter.format(yearMonth)
+    fun getNameForMonth(yearMonth: YearMonth): String = monthNameFormatter.format(yearMonth)
 }
 
 data class PlayStatsForMonth(

@@ -10,7 +10,6 @@ import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,10 +17,8 @@ import com.boardgamegeek.BR
 import com.boardgamegeek.R
 import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
-import com.boardgamegeek.ui.viewmodel.PlayStatsForMonth
 import kotlinx.android.synthetic.main.fragment_history_overview.history_overview_list
 import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 
 class HistoryOverviewFragment : Fragment() {
 
@@ -51,8 +48,10 @@ class HistoryOverviewFragment : Fragment() {
 
     private fun setup() {
         history_overview_list.let {
-            it.layoutManager = LinearLayoutManager(this.context)
+            it.layoutManager = LinearLayoutManager(context)
             it.adapter = HistoryOverviewAdapter(viewModel, viewLifecycleOwner, listener)
+            it.setHasFixedSize(true)
+            it.setItemViewCacheSize(20)
         }
     }
 }
@@ -87,20 +86,28 @@ class HistoryOverviewAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val yearMonth = YearMonth.now().minusMonths(position.toLong())
-        holder.bind(
-            yearMonth = yearMonth,
-            stats = viewModel.getStatsForMonth(yearMonth)
-        )
+        holder.bind(yearMonth)
+    }
+
+    override fun onViewRecycled(holder: ViewHolder) {
+        holder.unbind()
     }
 
     override fun getItemCount(): Int = monthCount
 
     inner class ViewHolder(private val binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(yearMonth: YearMonth, stats: LiveData<PlayStatsForMonth>?) {
+        fun bind(yearMonth: YearMonth) {
             binding.apply {
                 setVariable(BR.viewModel, viewModel)
                 setVariable(BR.listener, listener)
                 setVariable(BR.yearMonth, yearMonth)
+            }
+        }
+        fun unbind() {
+            binding.apply {
+                setVariable(BR.viewModel, null)
+                setVariable(BR.listener, null)
+                setVariable(BR.yearMonth, null)
             }
         }
     }
