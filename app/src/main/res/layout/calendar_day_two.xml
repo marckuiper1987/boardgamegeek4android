@@ -15,6 +15,7 @@
 		android:layout_weight="1"
 		android:layout_marginBottom="1dp"
 		app:cardCornerRadius="3dp"
+		app:cardElevation="0dp"
 	>
 		<ImageView
 			android:id="@+id/calendar_day_1"
@@ -31,6 +32,7 @@
 		android:layout_height="0dp"
 		android:layout_weight="1"
 		app:cardCornerRadius="3dp"
+		app:cardElevation="0dp"
 	>
 		<ImageView
 			android:id="@+id/calendar_day_2"

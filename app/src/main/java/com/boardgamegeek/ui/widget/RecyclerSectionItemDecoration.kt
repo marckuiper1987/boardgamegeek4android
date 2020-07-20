@@ -12,7 +12,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.boardgamegeek.R
 import com.boardgamegeek.extensions.inflate
 
-class RecyclerSectionItemDecoration(private val headerOffset: Int, private val sectionCallback: SectionCallback, private val sticky: Boolean = true) : RecyclerView.ItemDecoration() {
+class RecyclerSectionItemDecoration(
+    private val headerOffset: Int,
+    private val sectionCallback: SectionCallback,
+    private val sticky: Boolean = true,
+    private val layout: Int = R.layout.row_header
+) : RecyclerView.ItemDecoration() {
+
+    constructor(headerOffset: Int, sectionCallback: SectionCallback, sticky: Boolean = true):
+        this(headerOffset, sectionCallback, sticky, R.layout.row_header)
+
     private var headerView: View? = null
     private var titleView: TextView? = null
 
@@ -63,7 +72,7 @@ class RecyclerSectionItemDecoration(private val headerOffset: Int, private val s
     }
 
     private fun inflateHeaderView(parent: RecyclerView): View {
-        return parent.inflate(R.layout.row_header)
+        return parent.inflate(layout)
     }
 
     /**

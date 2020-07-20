@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+	android:id="@android:id/title"
+	style="@style/RowSeparatorLarge"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="100dp"
+	android:layout_height="wrap_content"
+	android:background="@color/background_transparent"
+	tools:text="2020"/>
