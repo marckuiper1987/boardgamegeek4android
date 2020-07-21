@@ -19,6 +19,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.boardgamegeek.R
 import com.boardgamegeek.entities.PlayEntity
@@ -115,6 +116,10 @@ open class PlaysFragment() : Fragment(), ActionMode.Callback {
         super.onViewCreated(view, savedInstanceState)
         recyclerView.setHasFixedSize(true)
         recyclerView.adapter = adapter
+
+        recyclerView.layoutManager = object : LinearLayoutManager(context) {
+            override fun canScrollVertically(): Boolean = !renderFixedList
+        }
 
         viewModel.plays.observe(viewLifecycleOwner, Observer {
             progressBar.isVisible = it.status == Status.REFRESHING && showProgressBar

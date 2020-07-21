@@ -88,8 +88,18 @@ class HistoryCalendarFragment : Fragment() {
             history_calendar.monthHeaderBinder = CalendarMonthHeaderBinder(daysOfWeek)
         }
 
+        var lastSelectedMonth = selectedMonth
+        var monthListenerEnabled = true
+
         history_calendar.monthScrollListener = { month ->
-            listener.onNavigateToMonth(month.yearMonth)
+            // When the calendar is opened on a different month than what it was
+            // displaying previously, it will trigger this listener with the
+            // previous month, causing us to switch back to it here. So that's
+            // why we ignore this right after opening the calendar.
+            if (monthListenerEnabled) {
+                listener.onNavigateToMonth(month.yearMonth)
+            }
+            monthListenerEnabled = true
         }
 
         // View model listeners
@@ -102,6 +112,12 @@ class HistoryCalendarFragment : Fragment() {
         })
 
         viewModel.selectedMonth.observe(viewLifecycleOwner, Observer { yearMonth ->
+            // When a different month is opened, ignore the month listener
+            // next time (this is a bit of a hack)
+            if (yearMonth != lastSelectedMonth) {
+                monthListenerEnabled = false
+            }
+            lastSelectedMonth = yearMonth
             yearMonth?.let { history_calendar.scrollToMonth(it) }
         })
     }

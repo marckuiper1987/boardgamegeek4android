@@ -103,7 +103,6 @@ class HistoryFragment :
         set(yearMonth) {
             field = yearMonth
             viewModel.selectedMonth.value = yearMonth
-
             selectedDate = null
             listener?.onChangeMonth(yearMonth)
         }
@@ -189,6 +188,7 @@ class HistoryFragment :
                     }
                     SlidingUpPanelLayout.PanelState.COLLAPSED -> {
                         calendarFragment?.hideCalendar()
+                        selectedMonth = null
                     }
                     else -> { }
                 }
