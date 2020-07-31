@@ -50,7 +50,6 @@ fun ImageView.loadThumbnail(imageUrl: String?, @DrawableRes errorResId: Int = R.
     val isSameImage = tag != null && tag == imageUrl?.getImageId()
 
     val requestCreator = Picasso.with(context)
-            .apply { setIndicatorsEnabled(true) }
             .load(imageUrl.ensureHttpsScheme())
             .error(errorResId)
             .fit()

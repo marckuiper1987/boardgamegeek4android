@@ -24,7 +24,7 @@ class HistoryCalendarThumbnail(context: Context, attrs: AttributeSet) : View(con
     }
 
     private val filledPaint = Paint(ANTI_ALIAS_FLAG).apply {
-        color = context.resources.getColor(R.color.primary)
+        color = context.resources.getColor(R.color.background)
         style = Paint.Style.FILL
     }
 
@@ -71,13 +71,13 @@ class HistoryCalendarThumbnail(context: Context, attrs: AttributeSet) : View(con
 
                     val paint = when {
                         dayInOtherMonth ->
-                            clearPaint.apply { alpha = 100 }
+                            filledPaint.apply { alpha = 40 }
                         plays.isNotEmpty() ->
                             filledPaint.apply {
-                                alpha = (80 + (plays.size * 20)).coerceAtMost(255)
+                                alpha = (155 + (plays.size * 20)).coerceAtMost(255)
                             }
                         else ->
-                            clearPaint.apply { alpha = 255 }
+                            filledPaint.apply { alpha = 100 }
                     }
 
                     val left = (dayOfWeek - 1) * (cellW + margin)

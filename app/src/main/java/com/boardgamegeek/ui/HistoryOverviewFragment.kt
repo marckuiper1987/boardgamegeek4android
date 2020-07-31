@@ -134,10 +134,10 @@ class HistoryOverviewAdapter(
 
                     Picasso
                         .with(context)
-                        .apply {
-                            setIndicatorsEnabled(true)
-                            isLoggingEnabled = true
-                        }
+//                        .apply {
+//                            setIndicatorsEnabled(true)
+//                            isLoggingEnabled = true
+//                        }
                         .load(game.imageUrl.ensureHttpsScheme())
                         .transform(object : Transformation {
                             override fun key(): String = "test()"
