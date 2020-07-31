@@ -69,6 +69,7 @@ class HistoryViewModel(
             }
         })
 
+        var initialObserve = true
         playRepository.getPlays().observe(viewLifecycleOwner, Observer { resource ->
 
             val plays = resource.data ?: return@Observer
@@ -79,7 +80,9 @@ class HistoryViewModel(
 
             plays
                 .distinctBy { it.gameId }
-                .forEach { putGameLiveData(it.gameId) }
+                .forEach { putGameLiveData(it.gameId, onlyIfAbsent = !initialObserve) }
+
+            initialObserve = false
         })
     }
 
@@ -95,18 +98,25 @@ class HistoryViewModel(
     private fun getMonthLiveData(yearMonth: YearMonth) =
         playsByMonth.getOrPut(yearMonth) { MutableLiveData() }
 
-    private fun putGameLiveData(gameId: Int) =
-        games.putIfAbsent(gameId,
-            MutableLiveData<CollectionItemEntity>().also {
-                gameCollectionRepository
-                    .getCollectionItems(gameId, allowRefresh = false)
-                    .observe(viewLifecycleOwner, Observer { items ->
-                        if (items.data != null) {
-                            games[gameId]?.value = items.data.firstOrNull()
-                        }
-                    })
-            }
-        )
+    private fun putGameLiveData(gameId: Int, onlyIfAbsent: Boolean = true) {
+
+        if (onlyIfAbsent && games.containsKey(gameId)) {
+            return
+        }
+
+        getGameLiveData(gameId).also {
+            gameCollectionRepository
+                .getCollectionItems(gameId, allowRefresh = false)
+                .observe(viewLifecycleOwner, Observer { items ->
+                    if (items.data != null) {
+                        games[gameId]?.value = items.data.firstOrNull()
+                    }
+                })
+        }
+    }
+
+    private fun getGameLiveData(gameId: Int) =
+        games.getOrPut(gameId) { MutableLiveData() }
 
     fun getPlaysByDayForMonth(yearMonth: YearMonth) =
         Transformations.map(getMonthLiveData(yearMonth)) { plays ->
@@ -124,7 +134,7 @@ class HistoryViewModel(
     fun getGamesForDay(date: LocalDate): LiveData<Set<LiveData<CollectionItemEntity>>> =
         Transformations.map(getPlaysForDay(date)) { plays ->
             plays
-                .map { games.getOrDefault(it.gameId, MutableLiveData()) }
+                .map { getGameLiveData(it.gameId) }
                 .toSet()
         }
 
@@ -134,7 +144,11 @@ class HistoryViewModel(
                 PlayStatsForMonth(
                     gamesPlayed = plays.distinctBy { it.gameId }.count(),
                     numberOfPlays = plays.sumBy { it.quantity },
-                    hoursPlayed = plays.sumBy { it.length }
+                    hoursPlayed = plays.sumBy { it.length },
+                    mostPlayedGame = plays
+                        .groupBy { it.gameId }
+                        .maxBy { it.value.size } // TODO: max by play time
+                        ?.let { getGameLiveData(it.key) }
                 )
             }
         }
@@ -145,5 +159,6 @@ class HistoryViewModel(
 data class PlayStatsForMonth(
     val gamesPlayed: Int,
     val numberOfPlays: Int,
-    val hoursPlayed: Int
+    val hoursPlayed: Int,
+    val mostPlayedGame: LiveData<CollectionItemEntity>?
 )

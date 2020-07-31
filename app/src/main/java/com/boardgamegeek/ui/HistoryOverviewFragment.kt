@@ -1,6 +1,9 @@
 package com.boardgamegeek.ui
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,15 +14,21 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
+import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.boardgamegeek.BR
 import com.boardgamegeek.R
+import com.boardgamegeek.extensions.ensureHttpsScheme
 import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
 import com.boardgamegeek.ui.widget.RecyclerSectionItemDecoration
+import com.squareup.picasso.Picasso
+import com.squareup.picasso.Transformation
 import kotlinx.android.synthetic.main.fragment_history_overview.history_overview_list
+import kotlinx.android.synthetic.main.fragment_history_overview_item.view.background_image
 import java.time.YearMonth
+
 
 class HistoryOverviewFragment : Fragment() {
 
@@ -49,7 +58,8 @@ class HistoryOverviewFragment : Fragment() {
 
     private fun setup() {
         history_overview_list.let {
-            val adapter = HistoryOverviewAdapter(viewModel, viewLifecycleOwner, listener)
+
+            val adapter = HistoryOverviewAdapter(viewModel, viewLifecycleOwner, requireContext(), listener)
 
             it.layoutManager = LinearLayoutManager(context)
             it.adapter = adapter
@@ -72,6 +82,7 @@ class HistoryOverviewFragment : Fragment() {
 class HistoryOverviewAdapter(
     private val viewModel: HistoryViewModel,
     private val viewLifecycleOwner: LifecycleOwner,
+    private val context: Context,
     private val listener: HistoryOverviewFragment.Listener?
 ) : RecyclerView.Adapter<HistoryOverviewAdapter.ViewHolder>(),
     RecyclerSectionItemDecoration.SectionCallback {
@@ -117,6 +128,52 @@ class HistoryOverviewAdapter(
                 setVariable(BR.listener, listener)
                 setVariable(BR.yearMonth, yearMonth)
             }
+
+            viewModel.getStatsForMonth(yearMonth).observe(viewLifecycleOwner, Observer { stats ->
+                stats.mostPlayedGame?.observe(viewLifecycleOwner, Observer { game ->
+
+                    Picasso
+                        .with(context)
+                        .apply {
+                            setIndicatorsEnabled(true)
+                            isLoggingEnabled = true
+                        }
+                        .load(game.imageUrl.ensureHttpsScheme())
+                        .transform(object : Transformation {
+                            override fun key(): String = "test()"
+
+                            override fun transform(source: Bitmap): Bitmap {
+
+                                val result = Bitmap.createBitmap(source.width, source.height, source.config)
+
+                                val palette = Palette.from(source).generate()
+
+                                val rgb = palette.getDarkVibrantColor(palette.getDarkMutedColor(context.resources.getColor(R.color.black_overlay)))
+
+                                val canvas = Canvas(result)
+
+                                canvas.drawBitmap(source, 0f, 0f, null)
+
+                                canvas.drawRect(0f, 0f, source.width.toFloat(), source.height.toFloat(), Paint().apply {
+                                    color = rgb
+                                    alpha = (255 * 70) / 100
+                                    style = Paint.Style.FILL
+                                })
+
+                                if (result != source) {
+                                    source.recycle()
+                                }
+
+                                return result
+                            }
+
+                        })
+                        .placeholder(R.color.black_overlay_light)
+                        .fit()
+                        .centerCrop()
+                        .into(binding.root.background_image)
+                })
+            })
         }
         fun unbind() {
             binding.apply {

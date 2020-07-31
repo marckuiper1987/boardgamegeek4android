@@ -48,7 +48,9 @@ fun ImageView.loadUrl(url: String?, callback: ImageUtils.Callback? = null) {
 fun ImageView.loadThumbnail(imageUrl: String?, @DrawableRes errorResId: Int = R.drawable.thumbnail_image_empty) {
     val tag = getTag(R.id.image)
     val isSameImage = tag != null && tag == imageUrl?.getImageId()
+
     val requestCreator = Picasso.with(context)
+            .apply { setIndicatorsEnabled(true) }
             .load(imageUrl.ensureHttpsScheme())
             .error(errorResId)
             .fit()
