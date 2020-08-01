@@ -69,6 +69,7 @@ class HistoryOverviewFragment : Fragment() {
             val itemDecoration = RecyclerSectionItemDecoration(
                 headerOffset = resources.getDimensionPixelSize(R.dimen.recycler_section_header_height_large),
                 sectionCallback = adapter,
+                sticky = false,
                 layout = R.layout.row_header_large
             )
             while (it.itemDecorationCount > 0) {
@@ -168,7 +169,6 @@ class HistoryOverviewAdapter(
                             }
 
                         })
-                        .placeholder(R.color.black_overlay_light)
                         .fit()
                         .centerCrop()
                         .into(binding.root.background_image)

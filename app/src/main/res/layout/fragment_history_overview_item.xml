@@ -12,15 +12,16 @@
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_marginHorizontal="@dimen/material_margin_horizontal"
+		android:layout_marginHorizontal="@dimen/material_margin_horizontal_card"
 		android:layout_marginVertical="@dimen/material_margin_vertical_card"
-		app:cardCornerRadius="7dp"
-		app:cardBackgroundColor="@color/background"
+		app:cardCornerRadius="@dimen/material_margin_horizontal_card"
+		android:foreground="?android:attr/selectableItemBackground"
 		android:onClick="@{() -> listener.onNavigateToMonth(yearMonth)}">
 
 		<RelativeLayout
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content">
+			android:layout_height="wrap_content"
+			android:background="@color/black_overlay_light">
 
 			<ImageView
 				android:id="@+id/background_image"
