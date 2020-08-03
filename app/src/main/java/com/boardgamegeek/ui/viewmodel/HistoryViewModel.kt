@@ -11,15 +11,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.boardgamegeek.entities.CollectionItemEntity
 import com.boardgamegeek.entities.PlayEntity
-import com.boardgamegeek.entities.RefreshableResource
-import com.boardgamegeek.extensions.monthsToNow
 import com.boardgamegeek.extensions.toLocalDate
 import com.boardgamegeek.repository.GameCollectionRepository
 import com.boardgamegeek.repository.PlayRepository
-import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class HistoryViewModelFactory(
@@ -42,30 +38,22 @@ class HistoryViewModel(
 
     private val monthNameFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM")
 
-    private val firstPlay = MutableLiveData<PlayEntity>()
-    private var allPlays: RefreshableResource<List<PlayEntity>>? = null
+    private val oldestPlay = MutableLiveData<PlayEntity>()
+    private val newestPlay = MutableLiveData<PlayEntity>()
+
+    val playStatsByMonth = MutableLiveData<Map<YearMonth, PlayStatsForMonth>>()
+
     private val playsByMonth = mutableMapOf<YearMonth, MutableLiveData<List<PlayEntity>>>()
     private val games = mutableMapOf<Int, MutableLiveData<CollectionItemEntity>>()
 
     val selectedDate = MutableLiveData<LocalDate?>()
     val selectedMonth = MutableLiveData<YearMonth?>()
-    val selectedMonthStats = Transformations.map(selectedMonth) { it?.let { getStatsForMonth(it) } }
+    val selectedMonthStats = Transformations.map(selectedMonth) { it?.let { playStatsByMonth.value?.get(it) } } // FIXME
 
     init {
         playRepository.getOldestPlayDate().observe(viewLifecycleOwner, Observer { plays ->
-
-            allPlays = plays
-
             plays.data?.firstOrNull()?.let {
-
-                val yearMonth = YearMonth.now()
-                val numMonths = YearMonth.from(it.dateInMillis.toLocalDate()).monthsToNow()
-
-                for (i in 0 until numMonths) {
-                    playsByMonth[yearMonth.minusMonths(i)] = MutableLiveData()
-                }
-
-                firstPlay.value = it
+                oldestPlay.value = it
             }
         })
 
@@ -74,9 +62,10 @@ class HistoryViewModel(
 
             val plays = resource.data ?: return@Observer
 
-            plays
-                .groupBy { YearMonth.from(it.dateInMillis.toLocalDate()) }
-                .forEach { playsByMonth[it.key]?.value = it.value }
+            playStatsByMonth.value =
+                plays
+                    .groupBy { YearMonth.from(it.dateInMillis.toLocalDate()) }
+                    .mapValues { makeStatsForMonth(it.value) }
 
             plays
                 .distinctBy { it.gameId }
@@ -87,7 +76,7 @@ class HistoryViewModel(
     }
 
     val numberOfMonthsBetweenFirstPlayAndNow =
-        Transformations.map(firstPlay) {
+        Transformations.map(oldestPlay) {
             if (it != null)
                 30L
 //                YearMonth.from(it.dateInMillis.toLocalDate()).monthsToNow()
@@ -95,8 +84,8 @@ class HistoryViewModel(
                 0
         }
 
-    private fun getMonthLiveData(yearMonth: YearMonth) =
-        playsByMonth.getOrPut(yearMonth) { MutableLiveData() }
+//    private fun getMonthLiveData(yearMonth: YearMonth) =
+//        playsByMonth.getOrPut(yearMonth) { MutableLiveData() }
 
     private fun putGameLiveData(gameId: Int, onlyIfAbsent: Boolean = true) {
 
@@ -118,47 +107,49 @@ class HistoryViewModel(
     private fun getGameLiveData(gameId: Int) =
         games.getOrPut(gameId) { MutableLiveData() }
 
-    fun getPlaysByDayForMonth(yearMonth: YearMonth) =
-        Transformations.map(getMonthLiveData(yearMonth)) { plays ->
-            plays.groupBy { it.dateInMillis.toLocalDate() }
-        }
+//    fun getPlaysByDayForMonth(yearMonth: YearMonth) =
+//        Transformations.map(getMonthLiveData(yearMonth)) { plays ->
+//            plays.groupBy { it.dateInMillis.toLocalDate() }
+//        }
 
-    private fun getPlaysForDay(date: LocalDate) =
-        Transformations.map(getMonthLiveData(YearMonth.from(date))) { plays ->
-            plays.filter {
-                val playDate = Instant.ofEpochMilli(it.dateInMillis).atZone(ZoneId.systemDefault()).toLocalDate()
-                playDate == date
-            }
-        }
+//    private fun getPlaysForDay(date: LocalDate) =
+//        Transformations.map(getMonthLiveData(YearMonth.from(date))) { plays ->
+//            plays.filter {
+//                val playDate = Instant.ofEpochMilli(it.dateInMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+//                playDate == date
+//            }
+//        }
 
     fun getGamesForDay(date: LocalDate): LiveData<Set<LiveData<CollectionItemEntity>>> =
-        Transformations.map(getPlaysForDay(date)) { plays ->
-            plays
-                .map { getGameLiveData(it.gameId) }
-                .toSet()
-        }
+        MutableLiveData()
+//        Transformations.map(getPlaysForDay(date)) { plays ->
+//            plays
+//                .map { getGameLiveData(it.gameId) }
+//                .toSet()
+//        }
 
-    fun getStatsForMonth(yearMonth: YearMonth): LiveData<PlayStatsForMonth> =
-        Transformations.map(getMonthLiveData(yearMonth)) { refreshable ->
-            refreshable.let { plays ->
-                PlayStatsForMonth(
-                    gamesPlayed = plays.distinctBy { it.gameId }.count(),
-                    numberOfPlays = plays.sumBy { it.quantity },
-                    hoursPlayed = plays.sumBy { it.length },
-                    mostPlayedGame = plays
-                        .groupBy { it.gameId }
-                        .maxBy { it.value.size } // TODO: max by play time
-                        ?.let { getGameLiveData(it.key) }
-                )
-            }
-        }
+//    fun getStatsForMonth(yearMonth: YearMonth): LiveData<PlayStatsForMonth> =
+//        Transformations.map(getMonthLiveData(yearMonth)) { makeStatsForMonth(it) }
 
     fun getNameForMonth(yearMonth: YearMonth): String = monthNameFormatter.format(yearMonth)
+
+    private fun makeStatsForMonth(plays: List<PlayEntity>) =
+        PlayStatsForMonth(
+            gamesPlayed = plays.distinctBy { it.gameId }.count(),
+            numberOfPlays = plays.sumBy { it.quantity },
+            hoursPlayed = plays.sumBy { it.length },
+            mostPlayedGame = plays
+                .groupBy { it.gameId }
+                .maxBy { it.value.size } // TODO: max by play time
+                ?.let { getGameLiveData(it.key).value }, // FIXME
+            playsByDate = plays.groupBy { it.dateInMillis.toLocalDate() }
+        )
 }
 
 data class PlayStatsForMonth(
     val gamesPlayed: Int,
     val numberOfPlays: Int,
     val hoursPlayed: Int,
-    val mostPlayedGame: LiveData<CollectionItemEntity>?
+    val mostPlayedGame: CollectionItemEntity?,
+    val playsByDate: Map<LocalDate, List<PlayEntity>>
 )

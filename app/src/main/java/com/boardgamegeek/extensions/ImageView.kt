@@ -15,6 +15,7 @@ import com.boardgamegeek.util.ImageUtils
 import com.boardgamegeek.util.ImageUtils.getImageId
 import com.boardgamegeek.util.PaletteTransformation
 import com.squareup.picasso.Picasso
+import com.squareup.picasso.Transformation
 
 fun ImageView.setOrClearColorFilter(@ColorInt color: Int) {
     if (color == Color.TRANSPARENT) clearColorFilter() else setColorFilter(color)
@@ -45,7 +46,12 @@ fun ImageView.loadUrl(url: String?, callback: ImageUtils.Callback? = null) {
             })
 }
 
-fun ImageView.loadThumbnail(imageUrl: String?, @DrawableRes errorResId: Int = R.drawable.thumbnail_image_empty) {
+fun ImageView.loadThumbnail(
+    imageUrl: String?,
+    @DrawableRes errorResId: Int = R.drawable.thumbnail_image_empty,
+    showPlaceholder: Boolean = true,
+    transformation: Transformation? = null
+) {
     val tag = getTag(R.id.image)
     val isSameImage = tag != null && tag == imageUrl?.getImageId()
 
@@ -54,18 +60,20 @@ fun ImageView.loadThumbnail(imageUrl: String?, @DrawableRes errorResId: Int = R.
             .error(errorResId)
             .fit()
             .centerCrop()
-    if (isSameImage) {
+
+    transformation?.let { requestCreator.transform(it) }
+
+    if (isSameImage || !showPlaceholder) {
         requestCreator.noFade().noPlaceholder()
     } else {
         requestCreator.placeholder(errorResId)
     }
+
     requestCreator.into(this, object : com.squareup.picasso.Callback {
         override fun onSuccess() {
             setTag(R.id.url, imageUrl)
         }
-
-        override fun onError() {
-        }
+        override fun onError() { }
     })
 }
 

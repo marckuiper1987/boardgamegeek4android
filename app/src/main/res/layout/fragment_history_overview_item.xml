@@ -4,8 +4,9 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto">
 
 	<data>
-		<variable name="viewModel" type="com.boardgamegeek.ui.viewmodel.HistoryViewModel" />
 		<variable name="yearMonth" type="java.time.YearMonth" />
+		<variable name="monthName" type="String" />
+		<variable name="stats" type="com.boardgamegeek.ui.viewmodel.PlayStatsForMonth" />
 		<variable name="listener" type="com.boardgamegeek.ui.HistoryOverviewFragment.Listener" />
 	</data>
 
@@ -44,7 +45,7 @@
 					android:layout_marginRight="@dimen/material_margin_horizontal"
 					android:layout_marginEnd="@dimen/material_margin_horizontal"
 					app:yearMonth="@{yearMonth}"
-					app:playsByDate="@{viewModel.getPlaysByDayForMonth(yearMonth)}" />
+					app:playsByDate="@{stats.playsByDate}" />
 
 				<TextView
 					android:id="@+id/text_month"
@@ -56,7 +57,7 @@
 					android:textAppearance="?attr/textAppearanceListItem"
 					android:textStyle="bold"
 					android:textColor="@color/background"
-					android:text="@{viewModel.getNameForMonth(yearMonth)}"
+					android:text="@{monthName}"
 					tools:text="Month" />
 
 				<TextView
@@ -69,7 +70,7 @@
 					android:textColor="@color/background"
 					android:gravity="end"
 					android:textAlignment="viewEnd"
-					android:text="@{viewModel.getStatsForMonth(yearMonth).gamesPlayed + ` games`}"
+					android:text="@{stats.gamesPlayed + ` games`}"
 					tools:text="123 games" />
 
 				<TextView
@@ -82,7 +83,7 @@
 					android:textColor="@color/background"
 					android:gravity="end"
 					android:textAlignment="viewEnd"
-					android:text="@{viewModel.getStatsForMonth(yearMonth).numberOfPlays + ` plays`}"
+					android:text="@{stats.numberOfPlays + ` plays`}"
 					tools:text="123 plays" />
 
 			</LinearLayout>

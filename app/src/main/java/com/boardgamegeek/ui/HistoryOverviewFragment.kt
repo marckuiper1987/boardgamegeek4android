@@ -1,9 +1,6 @@
 package com.boardgamegeek.ui
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,17 +11,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.boardgamegeek.BR
 import com.boardgamegeek.R
-import com.boardgamegeek.extensions.ensureHttpsScheme
+import com.boardgamegeek.extensions.loadThumbnail
 import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
+import com.boardgamegeek.ui.viewmodel.PlayStatsForMonth
 import com.boardgamegeek.ui.widget.RecyclerSectionItemDecoration
-import com.squareup.picasso.Picasso
-import com.squareup.picasso.Transformation
+import com.boardgamegeek.util.PaletteOverlayTransformation
 import kotlinx.android.synthetic.main.fragment_history_overview.history_overview_list
 import kotlinx.android.synthetic.main.fragment_history_overview_item.view.background_image
 import java.time.YearMonth
@@ -90,6 +86,8 @@ class HistoryOverviewAdapter(
 
     private var monthCount = 0L
 
+    private var playStatsPerMonth = emptyMap<YearMonth, PlayStatsForMonth>()
+
     init {
 //        setHasStableIds(true)
         viewModel
@@ -100,6 +98,11 @@ class HistoryOverviewAdapter(
                     notifyDataSetChanged()
                 }
             })
+
+        viewModel.playStatsByMonth.observe(viewLifecycleOwner, Observer {
+            playStatsPerMonth = it
+            notifyDataSetChanged()
+        })
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -128,58 +131,26 @@ class HistoryOverviewAdapter(
                 setVariable(BR.viewModel, viewModel)
                 setVariable(BR.listener, listener)
                 setVariable(BR.yearMonth, yearMonth)
+                setVariable(BR.monthName, viewModel.getNameForMonth(yearMonth))
+                setVariable(BR.stats, playStatsPerMonth[yearMonth])
             }
-
-            viewModel.getStatsForMonth(yearMonth).observe(viewLifecycleOwner, Observer { stats ->
-                stats.mostPlayedGame?.observe(viewLifecycleOwner, Observer { game ->
-
-                    Picasso
-                        .with(context)
-//                        .apply {
-//                            setIndicatorsEnabled(true)
-//                            isLoggingEnabled = true
-//                        }
-                        .load(game.imageUrl.ensureHttpsScheme())
-                        .transform(object : Transformation {
-                            override fun key(): String = "test()"
-
-                            override fun transform(source: Bitmap): Bitmap {
-
-                                val result = Bitmap.createBitmap(source.width, source.height, source.config)
-
-                                val palette = Palette.from(source).generate()
-
-                                val rgb = palette.getDarkVibrantColor(palette.getDarkMutedColor(context.resources.getColor(R.color.black_overlay)))
-
-                                val canvas = Canvas(result)
-
-                                canvas.drawBitmap(source, 0f, 0f, null)
-
-                                canvas.drawRect(0f, 0f, source.width.toFloat(), source.height.toFloat(), Paint().apply {
-                                    color = rgb
-                                    alpha = (255 * 70) / 100
-                                    style = Paint.Style.FILL
-                                })
-
-                                if (result != source) {
-                                    source.recycle()
-                                }
-
-                                return result
-                            }
-
-                        })
-                        .fit()
-                        .centerCrop()
-                        .into(binding.root.background_image)
-                })
-            })
+            playStatsPerMonth[yearMonth]?.mostPlayedGame?.let { game ->
+                binding.root.background_image.loadThumbnail(
+                    imageUrl = game.imageUrl,
+                    showPlaceholder = false,
+                    transformation = PaletteOverlayTransformation(
+                        context.resources.getColor(R.color.black_overlay)
+                    )
+                )
+            }
         }
         fun unbind() {
             binding.apply {
                 setVariable(BR.viewModel, null)
                 setVariable(BR.listener, null)
                 setVariable(BR.yearMonth, null)
+                setVariable(BR.monthName, null)
+                setVariable(BR.stats, null)
             }
         }
     }
