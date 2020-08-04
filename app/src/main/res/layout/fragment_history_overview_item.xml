@@ -48,7 +48,6 @@
 					app:playsByDate="@{stats.playsByDate}" />
 
 				<TextView
-					android:id="@+id/text_month"
 					android:layout_width="0dp"
 					android:layout_height="wrap_content"
 					android:layout_weight="1"
@@ -60,31 +59,45 @@
 					android:text="@{monthName}"
 					tools:text="Month" />
 
-				<TextView
-					android:id="@+id/item_number"
-					android:layout_width="80dp"
-					android:layout_height="wrap_content"
-					android:layout_marginRight="10dp"
-					android:layout_marginEnd="10dp"
-					android:textAppearance="?attr/textAppearanceListItem"
-					android:textColor="@color/background"
-					android:gravity="end"
-					android:textAlignment="viewEnd"
-					android:text="@{stats.gamesPlayed + ` games`}"
-					tools:text="123 games" />
+				<ImageView
+					android:layout_width="16dp"
+					android:layout_height="16dp"
+					android:src="@drawable/ic_game_box"
+					tools:ignore="ContentDescription" />
 
 				<TextView
-					android:id="@+id/content"
-					android:layout_width="80dp"
+					android:minWidth="30dp"
+					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
+					android:layout_marginLeft="4dp"
+					android:layout_marginStart="4dp"
 					android:layout_marginRight="10dp"
 					android:layout_marginEnd="10dp"
 					android:textAppearance="?attr/textAppearanceListItem"
+					android:textStyle="bold"
 					android:textColor="@color/background"
-					android:gravity="end"
-					android:textAlignment="viewEnd"
-					android:text="@{stats.numberOfPlays + ` plays`}"
-					tools:text="123 plays" />
+					android:text="@{String.valueOf(stats.gamesPlayed)}"
+					tools:text="123" />
+
+				<ImageView
+					android:layout_width="16dp"
+					android:layout_height="16dp"
+					android:src="@drawable/ic_pawn"
+					tools:ignore="ContentDescription" />
+
+				<TextView
+					android:minWidth="30dp"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginLeft="4dp"
+					android:layout_marginStart="4dp"
+					android:layout_marginRight="10dp"
+					android:layout_marginEnd="10dp"
+					android:textAppearance="?attr/textAppearanceListItem"
+					android:textStyle="bold"
+					android:textColor="@color/background"
+					android:text="@{String.valueOf(stats.numberOfPlays)}"
+					tools:text="123" />
 
 			</LinearLayout>
 		</RelativeLayout>

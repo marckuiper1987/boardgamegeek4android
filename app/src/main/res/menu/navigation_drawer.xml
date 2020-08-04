@@ -13,7 +13,7 @@
 			android:title="@string/title_collection_details"/>
 		<item
 			android:id="@+id/history"
-			android:icon="@drawable/ic_collection"
+			android:icon="@drawable/ic_plays"
 			android:title="@string/title_history"/>
 		<item
 			android:id="@+id/plays"
