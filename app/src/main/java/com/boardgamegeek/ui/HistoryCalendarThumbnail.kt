@@ -30,6 +30,7 @@ class HistoryCalendarThumbnail(context: Context, attrs: AttributeSet) : View(con
     var yearMonth: YearMonth? = null
         set(value) {
             field = value
+            setup()
             requestLayout()
         }
 

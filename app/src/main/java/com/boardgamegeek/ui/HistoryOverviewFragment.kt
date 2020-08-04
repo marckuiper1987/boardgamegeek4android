@@ -15,7 +15,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.boardgamegeek.BR
 import com.boardgamegeek.R
+import com.boardgamegeek.entities.CollectionItemEntity
 import com.boardgamegeek.extensions.loadThumbnail
+import com.boardgamegeek.ui.adapter.AutoUpdatableAdapter
 import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
 import com.boardgamegeek.ui.viewmodel.PlayStatsForMonth
@@ -24,7 +26,7 @@ import com.boardgamegeek.util.PaletteOverlayTransformation
 import kotlinx.android.synthetic.main.fragment_history_overview.history_overview_list
 import kotlinx.android.synthetic.main.fragment_history_overview_item.view.background_image
 import java.time.YearMonth
-
+import kotlin.properties.Delegates
 
 class HistoryOverviewFragment : Fragment() {
 
@@ -72,6 +74,10 @@ class HistoryOverviewFragment : Fragment() {
                 it.removeItemDecorationAt(0)
             }
             it.addItemDecoration(itemDecoration)
+
+            viewModel.playStatsByMonthList.observe(viewLifecycleOwner, Observer { items ->
+                adapter.items = items
+            })
         }
     }
 }
@@ -82,27 +88,17 @@ class HistoryOverviewAdapter(
     private val context: Context,
     private val listener: HistoryOverviewFragment.Listener?
 ) : RecyclerView.Adapter<HistoryOverviewAdapter.ViewHolder>(),
-    RecyclerSectionItemDecoration.SectionCallback {
+    RecyclerSectionItemDecoration.SectionCallback,
+    AutoUpdatableAdapter {
 
-    private var monthCount = 0L
-
-    private var playStatsPerMonth = emptyMap<YearMonth, PlayStatsForMonth>()
+    var items: List<PlayStatsForMonth?> by Delegates.observable(emptyList()) { _, old, new ->
+        autoNotify(old, new) { o, n ->
+            o?.numberOfPlays == n?.numberOfPlays // FIXME
+        }
+    }
 
     init {
-//        setHasStableIds(true)
-        viewModel
-            .numberOfMonthsBetweenFirstPlayAndNow
-            .observe(viewLifecycleOwner, Observer {
-                if (it != monthCount) {
-                    monthCount = it
-                    notifyDataSetChanged()
-                }
-            })
-
-        viewModel.playStatsByMonth.observe(viewLifecycleOwner, Observer {
-            playStatsPerMonth = it
-            notifyDataSetChanged()
-        })
+        setHasStableIds(true)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -112,45 +108,49 @@ class HistoryOverviewAdapter(
         return ViewHolder(binding)
     }
 
+    override fun getItemId(position: Int): Long =
+        items[position]?.yearMonth.hashCode().toLong()
+
     override fun getItemViewType(position: Int) = R.layout.fragment_history_overview_item
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val yearMonth = YearMonth.now().minusMonths(position.toLong())
-        holder.bind(yearMonth)
+        items[position]?.let { holder.bind(it) }
     }
 
     override fun onViewRecycled(holder: ViewHolder) {
         holder.unbind()
     }
 
-    override fun getItemCount(): Int = monthCount.toInt()
+    override fun getItemCount(): Int = items.size
 
     inner class ViewHolder(private val binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(yearMonth: YearMonth) {
-            binding.apply {
-                setVariable(BR.viewModel, viewModel)
-                setVariable(BR.listener, listener)
-                setVariable(BR.yearMonth, yearMonth)
-                setVariable(BR.monthName, viewModel.getNameForMonth(yearMonth))
-                setVariable(BR.stats, playStatsPerMonth[yearMonth])
-            }
-            playStatsPerMonth[yearMonth]?.mostPlayedGame?.let { game ->
-                binding.root.background_image.loadThumbnail(
-                    imageUrl = game.imageUrl,
-                    showPlaceholder = false,
-                    transformation = PaletteOverlayTransformation(
-                        context.resources.getColor(R.color.black_overlay)
-                    )
+
+        private val mostPlayedGameObserver = Observer<CollectionItemEntity> { game ->
+            binding.root.background_image.loadThumbnail(
+                imageUrl = game.imageUrl,
+                showPlaceholder = false,
+                transformation = PaletteOverlayTransformation(
+                    context.resources.getColor(R.color.black_overlay)
                 )
-            }
+            )
         }
+
+        fun bind(stats: PlayStatsForMonth) {
+            binding.apply {
+                setVariable(BR.yearMonth, stats.yearMonth)
+                setVariable(BR.monthName, viewModel.getNameForMonth(stats.yearMonth))
+                setVariable(BR.stats, stats)
+                setVariable(BR.listener, listener)
+            }
+            stats.mostPlayedGame?.observe(viewLifecycleOwner, mostPlayedGameObserver)
+        }
+
         fun unbind() {
             binding.apply {
-                setVariable(BR.viewModel, null)
-                setVariable(BR.listener, null)
                 setVariable(BR.yearMonth, null)
                 setVariable(BR.monthName, null)
                 setVariable(BR.stats, null)
+                setVariable(BR.listener, null)
             }
         }
     }
@@ -165,8 +165,6 @@ class HistoryOverviewAdapter(
         return thisLetter != lastLetter
     }
 
-    override fun getSectionHeader(position: Int): CharSequence {
-        val yearMonth = YearMonth.now().minusMonths(position.toLong())
-        return yearMonth.year.toString()
-    }
+    override fun getSectionHeader(position: Int): CharSequence =
+        items[position]?.yearMonth?.year.toString()
 }
