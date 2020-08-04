@@ -136,10 +136,10 @@ class HistoryViewModel(
     // Adapter lists
     // --------------------------
 
-    val playStatsByMonthList: LiveData<List<PlayStatsForMonth?>> = Transformations.map(playStatsByMonth) { statsByMonth ->
+    val playStatsByMonthList: LiveData<List<PlayStatsForMonth>> = Transformations.map(playStatsByMonth) { statsByMonth ->
 
         val oldestYearMonth = statsByMonth
-            .keys.min() ?: return@map emptyList<PlayStatsForMonth?>()
+            .keys.min() ?: return@map emptyList<PlayStatsForMonth>()
 
         val newestYearMonth = statsByMonth
             .keys.max() ?: YearMonth.now()
@@ -147,10 +147,10 @@ class HistoryViewModel(
 
         val monthsBetween = oldestYearMonth.monthsBetween(newestYearMonth)
 
-        mutableListOf<PlayStatsForMonth?>().apply {
+        mutableListOf<PlayStatsForMonth>().apply {
             for (position in 0 until monthsBetween) {
                 val yearMonth = newestYearMonth.minusMonths(position)
-                add(statsByMonth[yearMonth])
+                add(statsByMonth[yearMonth] ?: PlayStatsForMonth.empty(yearMonth))
             }
         }
     }
@@ -180,4 +180,15 @@ data class PlayStatsForMonth(
     val hoursPlayed: Int,
     val mostPlayedGame: LiveData<CollectionItemEntity>?,
     val playsByDate: Map<LocalDate, List<PlayEntity>>
-)
+) {
+    companion object {
+        fun empty(yearMonth: YearMonth) = PlayStatsForMonth(
+            yearMonth = yearMonth,
+            gamesPlayed = 0,
+            numberOfPlays = 0,
+            hoursPlayed = 0,
+            mostPlayedGame = null,
+            playsByDate = emptyMap()
+        )
+    }
+}

@@ -94,8 +94,10 @@ class HistoryFragment :
         set(date) {
             val oldDate = field
             field = date
-            viewModel.selectedDate.value = date
-            playsViewModel.setDate(date.toString())
+            if (date != oldDate) {
+                viewModel.selectedDate.value = date
+                playsViewModel.setDate(date.toString())
+            }
             switchPlaysListVisibility(oldDate, date)
         }
 

@@ -91,9 +91,9 @@ class HistoryOverviewAdapter(
     RecyclerSectionItemDecoration.SectionCallback,
     AutoUpdatableAdapter {
 
-    var items: List<PlayStatsForMonth?> by Delegates.observable(emptyList()) { _, old, new ->
+    var items: List<PlayStatsForMonth> by Delegates.observable(emptyList()) { _, old, new ->
         autoNotify(old, new) { o, n ->
-            o?.numberOfPlays == n?.numberOfPlays // FIXME
+            o.numberOfPlays == n.numberOfPlays // FIXME
         }
     }
 
@@ -109,12 +109,12 @@ class HistoryOverviewAdapter(
     }
 
     override fun getItemId(position: Int): Long =
-        items[position]?.yearMonth.hashCode().toLong()
+        items[position].yearMonth.hashCode().toLong()
 
     override fun getItemViewType(position: Int) = R.layout.fragment_history_overview_item
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        items[position]?.let { holder.bind(it) }
+        holder.bind(items[position])
     }
 
     override fun onViewRecycled(holder: ViewHolder) {
@@ -166,5 +166,5 @@ class HistoryOverviewAdapter(
     }
 
     override fun getSectionHeader(position: Int): CharSequence =
-        items[position]?.yearMonth?.year.toString()
+        items[position].yearMonth.year.toString()
 }
