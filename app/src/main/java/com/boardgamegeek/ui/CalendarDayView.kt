@@ -2,8 +2,6 @@ package com.boardgamegeek.ui
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.cardview.widget.CardView
@@ -13,6 +11,7 @@ import androidx.lifecycle.Observer
 import com.boardgamegeek.R
 import com.boardgamegeek.entities.CollectionItemEntity
 import com.boardgamegeek.extensions.loadThumbnail
+import com.boardgamegeek.util.PaletteOverlayTransformation
 import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_1_frame
 import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_2_frame
 import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_3_frame
@@ -90,6 +89,14 @@ class CalendarDayView(
 
     private var games: Set<LiveData<CollectionItemEntity>>? = null
 
+    // TODO: static?
+    private val paletteOverlayTransformation = PaletteOverlayTransformation(
+        context = context,
+        defaultColor = context.resources.getColor(R.color.black_overlay),
+        alpha = 120,
+        cornerOnly = true
+    )
+
     fun setGames(games: Set<LiveData<CollectionItemEntity>>, owner: LifecycleOwner) {
 
         if (games == this.games) return
@@ -103,9 +110,17 @@ class CalendarDayView(
             .forEach { it.removeObservers(owner) }
 
         fun loadThumbnail(card: CardView, view: ImageView, box: Int) {
+
+            card.setCardBackgroundColor(context.resources.getColor(R.color.black_overlay_light))
+
             boxes.gamesForBox(box).first().observe(owner, Observer { game ->
                 if (game != null) {
-                    view.loadThumbnail(game.thumbnailUrl)
+                    view.loadThumbnail(
+                        imageUrl = game.thumbnailUrl,
+                        showPlaceholder = false,
+                        transformation = if (!nested && box == 0) paletteOverlayTransformation else null
+                    )
+
                 }
             })
             if (nested) {

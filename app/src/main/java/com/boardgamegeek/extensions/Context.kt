@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.text.Html
 import android.text.SpannedString
 import android.text.TextUtils
+import android.util.TypedValue
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.preference.PreferenceManager
@@ -68,3 +69,6 @@ fun Context.isIntentAvailable(intent: Intent): Boolean {
     val list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
     return list.size > 0
 }
+
+fun Context.dpToPx(dp: Float): Float =
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)

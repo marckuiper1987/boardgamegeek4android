@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
@@ -24,6 +25,7 @@ import com.kizitonwose.calendarview.model.CalendarMonth
 import com.kizitonwose.calendarview.ui.DayBinder
 import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder
 import com.kizitonwose.calendarview.ui.ViewContainer
+import com.kizitonwose.calendarview.utils.Size
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDay
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDayFrame
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDayText
@@ -128,8 +130,7 @@ class HistoryCalendarFragment : Fragment() {
         activity?.windowManager?.defaultDisplay?.getMetrics(displayMetrics)
 
         (displayMetrics.widthPixels / 7).let {
-            history_calendar.dayWidth = it
-            history_calendar.dayHeight = it + 44 // add height of text box containing day number
+            history_calendar.daySize = Size(width = it, height = it)
         }
     }
 
@@ -145,7 +146,7 @@ class HistoryCalendarFragment : Fragment() {
 private class DayViewContainer(view: View, listener: HistoryCalendarFragment.Listener?) : ViewContainer(view) {
     lateinit var day: CalendarDay
 
-    val layout: LinearLayout = view.calendarDay
+    val layout: RelativeLayout = view.calendarDay
     val textView: TextView = view.calendarDayText
     val frame: FrameLayout = view.calendarDayFrame
 
@@ -202,6 +203,9 @@ private class CalendarDayBinder(
         }
 
         viewModel.getGamesForDay(day.date).observe(viewLifecycleOwner, Observer { games ->
+            if (games.isNotEmpty()) {
+                container.textView.setTextColor(context.resources.getColor(R.color.background))
+            }
             container.frame.removeAllViews()
             container.frame.addView(
                 CalendarDayView(context).apply {
