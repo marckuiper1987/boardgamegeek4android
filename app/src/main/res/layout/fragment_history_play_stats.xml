@@ -1,41 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
 
 	<data>
 		<variable name="viewModel" type="com.boardgamegeek.ui.viewmodel.HistoryViewModel" />
 	</data>
 
-	<LinearLayout
+	<TableLayout
 		xmlns:android="http://schemas.android.com/apk/res/android"
-		xmlns:tools="http://schemas.android.com/tools"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:gravity="center">
-
-		<TextView
-			android:id="@+id/item_number"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			android:layout_margin="10dp"
-			android:textAppearance="?attr/textAppearanceListItem"
-			android:gravity="center"
-			android:textAlignment="center"
-			android:text="@{String.valueOf(viewModel.selectedMonthStats.gamesPlayed) + ` games`}"
-			tools:text="123 games"
-			tools:ignore="NestedWeights" />
-
-		<TextView
-			android:id="@+id/content"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			android:layout_margin="10dp"
-			android:textAppearance="?attr/textAppearanceListItem"
-			android:gravity="center"
-			android:textAlignment="center"
-			android:text="@{String.valueOf(viewModel.selectedMonthStats.numberOfPlays) + ` plays`}"
-			tools:text="123 plays" />
-
-	</LinearLayout>
+		android:layout_height="wrap_content"
+		android:layout_marginVertical="10dp">
+		<TableRow>
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1">
+				<include
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="@{String.valueOf(viewModel.selectedMonthStats.gamesPlayed) + ` games`}"
+				/>
+			</FrameLayout>
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1">
+				<include
+					android:id="@+id/numberOfPlays"
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="@{String.valueOf(viewModel.selectedMonthStats.numberOfPlays) + ` plays`}"
+				/>
+			</FrameLayout>
+		</TableRow>
+		<TableRow>
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1">
+				<include
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="123 players"
+				/>
+			</FrameLayout>
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1">
+				<include
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="12h 34m played"
+				/>
+			</FrameLayout>
+		</TableRow>
+		<TableRow>
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1">
+				<include
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="123 locations"
+				/>
+			</FrameLayout>
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1">
+				<include
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="123 h-score"
+					/>
+			</FrameLayout>
+		</TableRow>
+	</TableLayout>
 </layout>
