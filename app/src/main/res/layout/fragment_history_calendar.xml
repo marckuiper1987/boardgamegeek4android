@@ -11,14 +11,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical">
-		<FrameLayout
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:background="@color/light_blue"
-			android:paddingTop="7dp"
-			android:paddingBottom="7dp">
-			<include layout="@layout/calendar_header" />
-		</FrameLayout>
+		<include layout="@layout/calendar_header" />
 		<com.boardgamegeek.ui.HistoryCalendarPlaceholder
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content" />

@@ -29,6 +29,7 @@ import com.kizitonwose.calendarview.utils.Size
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDay
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDayFrame
 import kotlinx.android.synthetic.main.calendar_day.view.calendarDayText
+import kotlinx.android.synthetic.main.calendar_header.legendLayout
 import kotlinx.android.synthetic.main.calendar_header.view.legendLayout
 import kotlinx.android.synthetic.main.fragment_history_calendar.history_calendar
 import java.time.DayOfWeek
@@ -81,6 +82,7 @@ class HistoryCalendarFragment : Fragment() {
             firstDayOfWeek = daysOfWeek.first()
         )
 
+        legendLayout.setDaysOfWeekLabels(daysOfWeek, selectedMonth ?: currentMonth)
         history_calendar.scrollToMonth(selectedMonth ?: currentMonth)
 
         setCalendarDayDimensions()
@@ -226,16 +228,7 @@ private class CalendarMonthHeaderBinder(
 ) : MonthHeaderFooterBinder<MonthViewContainer> {
     override fun create(view: View) = MonthViewContainer(view)
     override fun bind(container: MonthViewContainer, month: CalendarMonth) {
-
-        // Setup each header day text if we have not done that already.
-        if (container.legendLayout.tag == null) {
-            container.legendLayout.tag = month.yearMonth
-            container.legendLayout.children.map { it as TextView }.forEachIndexed { index, tv ->
-                tv.text = daysOfWeek[index].getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
-                    .toUpperCase(Locale.ENGLISH)
-            }
-            month.yearMonth
-        }
+        container.legendLayout.setDaysOfWeekLabels(daysOfWeek, month.yearMonth)
     }
 }
 
@@ -250,4 +243,14 @@ private fun daysOfWeekFromLocale(): Array<DayOfWeek> {
         daysOfWeek = rhs + lhs
     }
     return daysOfWeek
+}
+
+private fun LinearLayout.setDaysOfWeekLabels(daysOfWeek: Array<DayOfWeek>, yearMonth: YearMonth) {
+    if (tag != null) return
+    tag = yearMonth
+    children.map { it as TextView }.forEachIndexed { index, tv ->
+        tv.text = daysOfWeek[index]
+            .getDisplayName(TextStyle.NARROW, Locale.ENGLISH)
+            .toUpperCase(Locale.ENGLISH)
+    }
 }

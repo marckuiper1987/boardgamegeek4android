@@ -6,6 +6,8 @@
 	android:layout_height="wrap_content"
 	android:gravity="center"
 	android:orientation="horizontal"
+	android:paddingVertical="6dp"
+	android:background="@color/background"
 	tools:ignore="HardcodedText">
 
 	<TextView
@@ -16,7 +18,8 @@
 		android:gravity="center"
 		android:text="SUN"
 		android:textColor="@color/primary_dark"
-		android:textSize="12sp" />
+		android:textSize="10sp"
+		tools:ignore="SmallSp" />
 
 	<TextView
 		android:id="@+id/legendText2"
@@ -26,7 +29,8 @@
 		android:gravity="center"
 		android:text="MON"
 		android:textColor="@color/primary_dark"
-		android:textSize="12sp" />
+		android:textSize="10sp"
+		tools:ignore="SmallSp" />
 
 	<TextView
 		android:id="@+id/legendText3"
@@ -36,7 +40,8 @@
 		android:gravity="center"
 		android:text="TUE"
 		android:textColor="@color/primary_dark"
-		android:textSize="12sp" />
+		android:textSize="10sp"
+		tools:ignore="SmallSp" />
 
 	<TextView
 		android:id="@+id/legendText4"
@@ -46,7 +51,8 @@
 		android:gravity="center"
 		android:text="WED"
 		android:textColor="@color/primary_dark"
-		android:textSize="12sp" />
+		android:textSize="10sp"
+		tools:ignore="SmallSp" />
 
 	<TextView
 		android:id="@+id/legendText5"
@@ -56,7 +62,8 @@
 		android:gravity="center"
 		android:text="THU"
 		android:textColor="@color/primary_dark"
-		android:textSize="12sp" />
+		android:textSize="10sp"
+		tools:ignore="SmallSp" />
 
 	<TextView
 		android:id="@+id/legendText6"
@@ -66,7 +73,8 @@
 		android:gravity="center"
 		android:text="FRI"
 		android:textColor="@color/primary_dark"
-		android:textSize="12sp" />
+		android:textSize="10sp"
+		tools:ignore="SmallSp" />
 
 	<TextView
 		android:id="@+id/legendText7"
@@ -76,6 +84,7 @@
 		android:gravity="center"
 		android:text="SAT"
 		android:textColor="@color/primary_dark"
-		android:textSize="12sp" />
+		android:textSize="10sp"
+		tools:ignore="SmallSp" />
 
 </LinearLayout>
