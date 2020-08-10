@@ -21,10 +21,12 @@
 		android:id="@+id/calendarDayText"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_marginHorizontal="5dp"
-		android:layout_marginVertical="2dp"
+		android:paddingTop="1dp"
+		android:paddingLeft="3dp"
+		android:paddingStart="3dp"
 		android:textSize="12sp"
 		android:textStyle="bold"
+		android:includeFontPadding="false"
 		tools:text="22" />
 
 </RelativeLayout>

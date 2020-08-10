@@ -130,7 +130,6 @@ class HistoryOverviewAdapter(
                 imageUrl = game.imageUrl,
                 showPlaceholder = false,
                 transformation = PaletteOverlayTransformation(
-                    context = context,
                     defaultColor = context.resources.getColor(R.color.black_overlay)
                 )
             )

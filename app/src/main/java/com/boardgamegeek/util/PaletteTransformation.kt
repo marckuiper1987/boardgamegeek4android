@@ -3,7 +3,6 @@ package com.boardgamegeek.util
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.Shader
@@ -43,53 +42,61 @@ class PaletteTransformation private constructor() : Transformation {
 }
 
 class PaletteOverlayTransformation(
-    private var context: Context,
-    private var defaultColor: Int,
-    private var alpha: Int = 180,
-    private var cornerOnly: Boolean = false
+    private var defaultColor: Int
 ) : Transformation {
 
-    override fun key(): String = "palette_overlay_${alpha}_${if (cornerOnly) "corner" else "full"}"
+    override fun key(): String = "palette_overlay_${defaultColor}}"
 
     override fun transform(source: Bitmap): Bitmap {
 
         val result = Bitmap.createBitmap(source.width, source.height, source.config)
 
-        val rgb = Palette.from(source).generate().getDarkVibrantColor(defaultColor)
-//        val rgb = Palette.from(source).generate().getDarkMutedColor(defaultColor)
+//        val rgb = Palette.from(source).generate().getDarkVibrantColor(defaultColor)
+        val rgb = Palette.from(source).generate().getDarkMutedColor(defaultColor)
 
         Canvas(result).apply {
             drawBitmap(source, 0f, 0f, null)
+            drawRect(0f, 0f, source.width.toFloat(), source.height.toFloat(), Paint().apply {
+                color = rgb
+                alpha = 180
+                style = Paint.Style.FILL
+            })
+        }
 
-            // TODO: split into two classes
-            if (cornerOnly) {
+        if (result != source) {
+            source.recycle()
+        }
 
-//                val position = context.dpToPx(10f)
-//                val radius = position * 1.5f
+        return result
+    }
+}
 
-                val position = 0f
-                val radius = context.dpToPx(30f)
+class PaletteCornerOverlayTransformation(
+    private var radius: Float,
+    private var defaultColor: Int
+) : Transformation {
 
-                drawCircle(position, position, radius, Paint().apply {
-                    shader = RadialGradient(
-                        position,
-                        position,
-                        radius,
-                        intArrayOf(rgb, rgb.withAlpha(0)),
-                        floatArrayOf(0f, 1f),
-                        Shader.TileMode.CLAMP
-                    )
-//                    alpha = this@PaletteOverlayTransformation.alpha
-//                    style = Paint.Style.FILL
-                })
-            }
-            else {
-                drawRect(0f, 0f, source.width.toFloat(), source.height.toFloat(), Paint().apply {
-                    color = rgb
-                    alpha = this@PaletteOverlayTransformation.alpha
-                    style = Paint.Style.FILL
-                })
-            }
+    override fun key(): String = "palette_overlay_corner_${radius}_${defaultColor}"
+
+    override fun transform(source: Bitmap): Bitmap {
+
+        val result = Bitmap.createBitmap(source.width, source.height, source.config)
+
+//        val rgb = Palette.from(source).generate().getDarkVibrantColor(defaultColor)
+        val rgb = Palette.from(source).generate().getDarkMutedColor(defaultColor)
+
+        Canvas(result).apply {
+            drawBitmap(source, 0f, 0f, null)
+            drawCircle(0f, 0f, radius, Paint().apply {
+                shader = RadialGradient(
+                    0f,
+                    0f,
+                    radius,
+                    intArrayOf(rgb, rgb.withAlpha(0)),
+                    floatArrayOf(0f, 1f),
+                    Shader.TileMode.CLAMP
+                )
+            })
         }
 
         if (result != source) {

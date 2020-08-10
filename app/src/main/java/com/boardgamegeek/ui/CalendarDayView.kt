@@ -10,8 +10,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.boardgamegeek.R
 import com.boardgamegeek.entities.CollectionItemEntity
+import com.boardgamegeek.extensions.dpToPx
 import com.boardgamegeek.extensions.loadThumbnail
-import com.boardgamegeek.util.PaletteOverlayTransformation
+import com.boardgamegeek.util.PaletteCornerOverlayTransformation
 import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_1_frame
 import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_2_frame
 import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_3_frame
@@ -89,12 +90,9 @@ class CalendarDayView(
 
     private var games: Set<LiveData<CollectionItemEntity>>? = null
 
-    // TODO: static?
-    private val paletteOverlayTransformation = PaletteOverlayTransformation(
-        context = context,
+    private val paletteOverlayTransformation = PaletteCornerOverlayTransformation(
         defaultColor = context.resources.getColor(R.color.black_overlay),
-        alpha = 120,
-        cornerOnly = true
+        radius = context.dpToPx(25f)
     )
 
     fun setGames(games: Set<LiveData<CollectionItemEntity>>, owner: LifecycleOwner) {
@@ -120,7 +118,6 @@ class CalendarDayView(
                         showPlaceholder = false,
                         transformation = if (!nested && box == 0) paletteOverlayTransformation else null
                     )
-
                 }
             })
             if (nested) {
