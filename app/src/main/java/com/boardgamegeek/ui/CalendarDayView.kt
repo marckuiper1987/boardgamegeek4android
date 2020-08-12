@@ -13,14 +13,14 @@ import com.boardgamegeek.entities.CollectionItemEntity
 import com.boardgamegeek.extensions.dpToPx
 import com.boardgamegeek.extensions.loadThumbnail
 import com.boardgamegeek.util.PaletteCornerOverlayTransformation
-import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_1_frame
-import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_2_frame
-import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_3_frame
-import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_4
-import kotlinx.android.synthetic.main.calendar_day_four.view.calendar_day_4_frame
-import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_1
-import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_2
-import kotlinx.android.synthetic.main.calendar_day_three.view.calendar_day_3
+import kotlinx.android.synthetic.main.fragment_history_calendar_day_four.view.calendar_day_1_frame
+import kotlinx.android.synthetic.main.fragment_history_calendar_day_four.view.calendar_day_2_frame
+import kotlinx.android.synthetic.main.fragment_history_calendar_day_four.view.calendar_day_3_frame
+import kotlinx.android.synthetic.main.fragment_history_calendar_day_four.view.calendar_day_4
+import kotlinx.android.synthetic.main.fragment_history_calendar_day_four.view.calendar_day_4_frame
+import kotlinx.android.synthetic.main.fragment_history_calendar_day_three.view.calendar_day_1
+import kotlinx.android.synthetic.main.fragment_history_calendar_day_three.view.calendar_day_2
+import kotlinx.android.synthetic.main.fragment_history_calendar_day_three.view.calendar_day_3
 
 class BoxedGameImages(
     private val games: Set<LiveData<CollectionItemEntity>>
@@ -142,22 +142,22 @@ class CalendarDayView(
 
         when (boxes.numberOfBoxes) {
             1 -> {
-                inflate(context, R.layout.calendar_day_one, this)
+                inflate(context, R.layout.fragment_history_calendar_day_one, this)
                 loadThumbnail(calendar_day_1_frame, calendar_day_1, 0)
             }
             2 -> {
-                inflate(context, R.layout.calendar_day_two, this)
+                inflate(context, R.layout.fragment_history_calendar_day_two, this)
                 loadThumbnail(calendar_day_1_frame, calendar_day_1, 0)
                 loadThumbnail(calendar_day_2_frame, calendar_day_2, 1)
             }
             3 -> {
-                inflate(context, R.layout.calendar_day_three, this)
+                inflate(context, R.layout.fragment_history_calendar_day_three, this)
                 loadThumbnail(calendar_day_1_frame, calendar_day_1, 0)
                 loadThumbnail(calendar_day_2_frame, calendar_day_2, 1)
                 loadThumbnail(calendar_day_3_frame, calendar_day_3, 2)
             }
             4 -> {
-                inflate(context, R.layout.calendar_day_four, this)
+                inflate(context, R.layout.fragment_history_calendar_day_four, this)
                 loadThumbnailOrBox(calendar_day_1_frame, calendar_day_1, 0)
                 loadThumbnailOrBox(calendar_day_2_frame, calendar_day_2, 1)
                 loadThumbnailOrBox(calendar_day_3_frame, calendar_day_3, 2)

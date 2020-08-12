@@ -7,18 +7,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
+import androidx.databinding.BindingAdapter
+import androidx.databinding.DataBindingComponent
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
+import com.boardgamegeek.BR
 import com.boardgamegeek.R
+import com.boardgamegeek.extensions.loadThumbnail
 import com.boardgamegeek.ui.viewmodel.HistoryViewModel
 import com.boardgamegeek.ui.viewmodel.HistoryViewModelFactory
+import com.boardgamegeek.util.PaletteOverlayTransformation
 import com.karumi.weak.weak
 import com.kizitonwose.calendarview.model.CalendarDay
 import com.kizitonwose.calendarview.model.CalendarMonth
@@ -26,12 +34,14 @@ import com.kizitonwose.calendarview.ui.DayBinder
 import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder
 import com.kizitonwose.calendarview.ui.ViewContainer
 import com.kizitonwose.calendarview.utils.Size
-import kotlinx.android.synthetic.main.calendar_day.view.calendarDay
-import kotlinx.android.synthetic.main.calendar_day.view.calendarDayFrame
-import kotlinx.android.synthetic.main.calendar_day.view.calendarDayText
-import kotlinx.android.synthetic.main.calendar_header.legendLayout
-import kotlinx.android.synthetic.main.calendar_header.view.legendLayout
+import kotlinx.android.synthetic.main.fragment_history_calendar_day.view.calendarDay
+import kotlinx.android.synthetic.main.fragment_history_calendar_day.view.calendarDayFrame
+import kotlinx.android.synthetic.main.fragment_history_calendar_day.view.calendarDayText
+import kotlinx.android.synthetic.main.fragment_history_calendar_header.legendLayout
+import kotlinx.android.synthetic.main.fragment_history_calendar_header.view.legendLayout
 import kotlinx.android.synthetic.main.fragment_history_calendar.history_calendar
+import kotlinx.android.synthetic.main.fragment_history_play_stats.numberOfPlays
+import kotlinx.android.synthetic.main.fragment_history_play_stats_item.view.background_image
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -90,6 +100,7 @@ class HistoryCalendarFragment : Fragment() {
         context?.let { context ->
             history_calendar.dayBinder = CalendarDayBinder(context, viewLifecycleOwner, viewModel, listener)
             history_calendar.monthHeaderBinder = CalendarMonthHeaderBinder(daysOfWeek)
+            history_calendar.monthFooterBinder = CalendarMonthFooterBinder(viewLifecycleOwner, viewModel)
         }
 
         var lastSelectedMonth = selectedMonth
@@ -219,16 +230,53 @@ private class CalendarDayBinder(
     }
 }
 
-private class MonthViewContainer(view: View) : ViewContainer(view) {
+private class MonthHeaderViewContainer(view: View): ViewContainer(view) {
     val legendLayout: LinearLayout = view.legendLayout
 }
 
 private class CalendarMonthHeaderBinder(
     private val daysOfWeek: Array<DayOfWeek>
-) : MonthHeaderFooterBinder<MonthViewContainer> {
-    override fun create(view: View) = MonthViewContainer(view)
-    override fun bind(container: MonthViewContainer, month: CalendarMonth) {
+): MonthHeaderFooterBinder<MonthHeaderViewContainer> {
+    override fun create(view: View) = MonthHeaderViewContainer(view)
+    override fun bind(container: MonthHeaderViewContainer, month: CalendarMonth) {
         container.legendLayout.setDaysOfWeekLabels(daysOfWeek, month.yearMonth)
+    }
+}
+
+private class MonthFooterViewContainer(view: View): ViewContainer(view) {
+
+}
+
+class ThumbnailBindingAdapter {
+
+    @BindingAdapter("imageUrl")
+    fun setImageUrl(view: ImageView, imageUrl: String?) {
+        view.loadThumbnail(
+            imageUrl = imageUrl,
+            showPlaceholder = false,
+            transformation = PaletteOverlayTransformation(
+                defaultColor = view.context.resources.getColor(R.color.black_overlay)
+            )
+        )
+    }
+}
+
+private class CalendarMonthFooterBinder(
+    private val viewLifecycleOwner: LifecycleOwner,
+    private val viewModel: HistoryViewModel
+): MonthHeaderFooterBinder<MonthFooterViewContainer> {
+    override fun create(view: View) = MonthFooterViewContainer(view)
+    override fun bind(container: MonthFooterViewContainer, month: CalendarMonth) {
+        DataBindingUtil.bind<ViewDataBinding>(container.view, object : DataBindingComponent {
+
+            override fun getThumbnailBindingAdapter(): ThumbnailBindingAdapter {
+                return ThumbnailBindingAdapter()
+            }
+
+        })?.apply {
+            lifecycleOwner = viewLifecycleOwner
+            setVariable(BR.stats, viewModel.getStatsForMonth(month.yearMonth))
+        }
     }
 }
 

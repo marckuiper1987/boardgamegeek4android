@@ -11,7 +11,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical">
-		<include layout="@layout/calendar_header" />
+		<include layout="@layout/fragment_history_calendar_header" />
 		<com.boardgamegeek.ui.HistoryCalendarPlaceholder
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content" />
@@ -21,12 +21,14 @@
 		android:id="@+id/history_calendar"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		app:cv_dayViewResource="@layout/calendar_day"
-		app:cv_monthHeaderResource="@layout/calendar_header"
+		app:cv_dayViewResource="@layout/fragment_history_calendar_day"
+		app:cv_monthHeaderResource="@layout/fragment_history_calendar_header"
+		app:cv_monthFooterResource="@layout/fragment_history_calendar_footer"
 		app:cv_orientation="horizontal"
 		app:cv_outDateStyle="endOfGrid"
 		app:cv_scrollMode="paged"
 		android:background="@color/light_blue"
+		android:paddingBottom="1dp"
 		tools:ignore="NestedWeights" />
 
 </FrameLayout>

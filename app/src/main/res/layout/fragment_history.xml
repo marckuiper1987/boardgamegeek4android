@@ -38,13 +38,6 @@
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content" />
 
-				<!-- HistoryPlayStatsFragment -->
-				<FrameLayout
-					android:id="@+id/history_play_stats_frame"
-					android:layout_width="match_parent"
-					android:layout_height="0dp"
-					android:layout_weight="1" />
-
 				<!-- PlaysFragment -->
 				<FrameLayout
 					android:id="@+id/history_plays_frame"

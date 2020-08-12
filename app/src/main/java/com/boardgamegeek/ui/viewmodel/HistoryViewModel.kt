@@ -171,6 +171,8 @@ class HistoryViewModel(
         }
 
     fun getNameForMonth(yearMonth: YearMonth): String = monthNameFormatter.format(yearMonth)
+
+    fun getStatsForMonth(yearMonth: YearMonth) = getMonthStatsLiveData(yearMonth)
 }
 
 data class PlayStatsForMonth(

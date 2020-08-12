@@ -6,12 +6,12 @@
 
 	<data>
 		<variable name="label" type="String" />
+		<variable name="imageUrl" type="String" />
 	</data>
 
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_margin="5dp"
 		app:cardCornerRadius="@dimen/material_margin_horizontal_card"
 		android:foreground="?android:attr/selectableItemBackground">
 
@@ -24,6 +24,7 @@
 				android:id="@+id/background_image"
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
+				app:imageUrl="@{imageUrl}"
 				tools:ignore="ContentDescription" />
 
 			<LinearLayout

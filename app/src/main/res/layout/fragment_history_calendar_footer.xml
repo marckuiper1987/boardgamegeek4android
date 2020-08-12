@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<data>
+		<variable name="stats" type="androidx.lifecycle.LiveData&lt;com.boardgamegeek.ui.viewmodel.PlayStatsForMonth&gt;" />
+	</data>
+
+	<TableLayout
+		android:layout_width="match_parent"
+		android:layout_height="150dp"
+		android:paddingVertical="10dp"
+		android:paddingHorizontal="@dimen/material_margin_horizontal_card"
+		android:background="@color/background">
+		<TableRow
+			android:layout_marginBottom="@dimen/material_margin_vertical_card">
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:layout_marginRight="@dimen/material_margin_horizontal_card"
+				android:layout_marginEnd="@dimen/material_margin_horizontal_card">
+				<include
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="@{String.valueOf(stats.gamesPlayed) + ` games`}"
+				/>
+			</FrameLayout>
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1">
+				<include
+					android:id="@+id/numberOfPlays"
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="@{String.valueOf(stats.numberOfPlays) + ` plays`}"
+					app:imageUrl="@{stats.mostPlayedGame.imageUrl}"
+				/>
+			</FrameLayout>
+		</TableRow>
+		<TableRow
+			android:layout_marginBottom="@dimen/material_margin_vertical_card">
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:layout_marginRight="@dimen/material_margin_horizontal_card"
+				android:layout_marginEnd="@dimen/material_margin_horizontal_card">
+				<include
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="@{`123 players`}"
+				/>
+			</FrameLayout>
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1">
+				<include
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="@{`12h 34m played`}"
+				/>
+			</FrameLayout>
+		</TableRow>
+		<TableRow>
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:layout_marginRight="@dimen/material_margin_horizontal_card"
+				android:layout_marginEnd="@dimen/material_margin_horizontal_card">
+				<include
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="@{`123 locations`}"
+				/>
+			</FrameLayout>
+			<FrameLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1">
+				<include
+					layout="@layout/fragment_history_play_stats_item"
+					app:label="@{`123 h-score`}"
+				/>
+			</FrameLayout>
+		</TableRow>
+	</TableLayout>
+</layout>
